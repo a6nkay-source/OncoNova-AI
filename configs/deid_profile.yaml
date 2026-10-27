@@ -1,0 +1,42 @@
+# DICOM de-identification profile used for every DICOM upload.
+# A practical subset of the DICOM PS3.15 Basic Application Level Confidentiality
+# Profile. Not certified. Review output before sharing, and check pixel data for
+# burned-in text (BurnedInAnnotation is reported as a warning).
+remove:
+  - PatientBirthDate
+  - PatientAddress
+  - PatientTelephoneNumbers
+  - OtherPatientIDs
+  - OtherPatientNames
+  - PatientMotherBirthName
+  - MedicalRecordLocator
+  - ReferringPhysicianName
+  - PerformingPhysicianName
+  - OperatorsName
+  - InstitutionAddress
+  - StationName
+  - DeviceSerialNumber
+  - PatientComments
+  - AdditionalPatientHistory
+blank:
+  - InstitutionName
+  - StudyTime
+  - SeriesTime
+  - AcquisitionTime
+  - ContentTime
+pseudonymize:          # replaced by HMAC-SHA256(salt, value); salt lives in data/.pseudonym_salt
+  - PatientID
+  - PatientName
+  - AccessionNumber
+  - StudyID
+remap_uids:
+  - StudyInstanceUID
+  - SeriesInstanceUID
+  - SOPInstanceUID
+  - FrameOfReferenceUID
+remove_dates:
+  - StudyDate
+  - SeriesDate
+  - AcquisitionDate
+  - ContentDate
+remove_private_tags: true

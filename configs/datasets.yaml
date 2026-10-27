@@ -1,0 +1,166 @@
+# Public dataset catalogue shown on the Dataset Management page.
+# Every value was read from the official collection page, the archive, or the
+# dataset paper on the date in `checked`. Anything not confirmed there is
+# "not stated". Re-check licences and access terms before downloading:
+# they can change.
+checked: "2026-10-26"
+datasets:
+  - id: msd-task06-lung
+    name: Medical Segmentation Decathlon - Task06 Lung
+    cancer_type: Non-small cell lung cancer (lung tumours)
+    body_region: Thorax
+    modality: CT
+    format: NIfTI (reoriented to RAS, not resampled)
+    patients: "96 (64 training with labels, 32 test without released labels)"
+    images: "96 CT volumes"
+    annotations: Tumour segmentation masks (training cases only)
+    ground_truth: >-
+      Manual segmentation by a human rater (the paper states labels came from a single rater in general).
+      Not pathology-confirmed at voxel level.
+    source_collection: The Cancer Imaging Archive (exact collection not stated in the paper text reviewed)
+    download_url: https://msd-for-monai.s3-us-west-2.amazonaws.com/Task06_Lung.tar
+    landing_page: http://medicaldecathlon.com/
+    paper: "Antonelli et al., Nat Commun 2022. PMID 35840566, doi:10.1038/s41467-022-30695-9"
+    license: >-
+      CC BY-SA 4.0 per the paper. The AWS Open Data registry text says "CC-BY-SA 4.0 International"
+      but links to the CC BY 4.0 URL; treat as CC BY-SA 4.0.
+    access: Open, no registration
+    size: "9.16 GB tar (9,163,696,640 bytes, HTTP Content-Length)"
+    suitable_for: [segmentation]
+    notes: >-
+      May overlap with other TCIA lung collections. Check for shared patients before combining datasets,
+      or patients could leak between training and test sets.
+    recommended_starter: true
+  - id: nsclc-radiomics
+    name: NSCLC-Radiomics (Lung1)
+    cancer_type: Non-small cell lung cancer
+    body_region: Thorax
+    modality: CT, RTSTRUCT, SEG (DICOM); clinical CSV
+    format: DICOM
+    patients: "422"
+    images: "1,265 series, 52,073 images (version 4)"
+    annotations: >-
+      Manual GTV-1 (primary gross tumour volume) by a radiation oncologist, plus lung, heart and oesophagus.
+      SEG objects contain a subset of the RTSTRUCT annotations.
+    ground_truth: Expert contour (radiation oncologist), not pathology-confirmed at voxel level
+    outcomes: Overall survival (days from start of treatment) with censoring indicator
+    download_url: https://www.cancerimagingarchive.net/collection/nsclc-radiomics/ (TCIA Data Retriever) or NCI IDC
+    paper: "Aerts et al., Nat Commun 2014. PMID 24892406, doi:10.1038/ncomms5006"
+    dataset_doi: 10.7937/K9/TCIA.2015.PF0M9REI
+    license: CC BY-NC 3.0 (non-commercial)
+    access: Open (TCIA Data Usage Policy; data citation required)
+    size: "35.78 GB"
+    suitable_for: [segmentation, survival, research dose/DVH visualisation (OAR contours)]
+    notes: Collection page says some TNM staging encodings were lost. Subsets can be downloaded from IDC with idc-index.
+  - id: lidc-idri
+    name: LIDC-IDRI
+    cancer_type: Lung nodules (benign and malignant)
+    body_region: Thorax
+    modality: CT (collection also lists DX and CR)
+    format: DICOM; XML radiologist annotations
+    patients: "1,010 (collection table); the description says 1,018 cases"
+    images: "1,308 series, 244,527 images"
+    annotations: >-
+      Two-phase reads by four thoracic radiologists: nodule outlines (>= 3 mm), marks for nodules < 3 mm and
+      non-nodules, subjective characteristic ratings.
+    ground_truth: >-
+      Radiologist opinion, not pathology. A limited diagnosis subset exists, established by biopsy, resection,
+      2-year stability or "unknown"; the pathology-confirmed fraction is not stated.
+    download_url: https://www.cancerimagingarchive.net/collection/lidc-idri/
+    paper: "Armato et al., Med Phys 2011. PMID 21452728, doi:10.1118/1.3528204"
+    dataset_doi: 10.7937/K9/TCIA.2015.LO9QL9SX
+    license: CC BY 3.0
+    access: Open (TCIA Data Usage Policy)
+    size: "133.16 GB"
+    suitable_for: [nodule detection, segmentation, characteristic-rating classification]
+    notes: Ratings show suspicion, not confirmed malignancy. Never treat them as cancer labels.
+  - id: lctsc
+    name: Lung CT Segmentation Challenge 2017 (LCTSC)
+    cancer_type: Thoracic cancer patients (organs-at-risk only; no tumour labels)
+    body_region: Thorax
+    modality: CT, RTSTRUCT
+    format: DICOM
+    patients: "60"
+    images: "120 series, 9,593 images"
+    annotations: Left/right lung, heart, oesophagus, spinal cord
+    ground_truth: Clinical planning contours, quality-checked and edited to RTOG 1106 guidelines
+    download_url: https://www.cancerimagingarchive.net/collection/lctsc/
+    paper: "Yang et al., Med Phys 2018. PMID 30144101, doi:10.1002/mp.13141"
+    dataset_doi: 10.7937/K9/TCIA.2017.3R3FVZ08
+    license: CC BY 3.0
+    access: Open (TCIA Data Usage Policy)
+    size: "5.15 GB"
+    suitable_for: [organ-at-risk segmentation]
+  - id: nsclc-radiogenomics
+    name: NSCLC Radiogenomics
+    cancer_type: Non-small cell lung cancer
+    body_region: Thorax
+    modality: CT, PET/CT, SEG; AIM annotations; clinical CSV
+    format: DICOM; XML (AIM)
+    patients: "211"
+    images: "395 studies, 1,351 series, 286,754 images"
+    annotations: Tumour segmentation maps on CT (number of subjects with masks not stated on the page); semantic annotations
+    ground_truth: >-
+      Mask annotator type not stated on the page. Genomic data come from surgically excised tumour tissue
+      (paper abstract).
+    outcomes: Survival outcomes (per the paper); recurrence not explicitly stated
+    download_url: https://www.cancerimagingarchive.net/collection/nsclc-radiogenomics/
+    paper: "Bakr et al., Sci Data 2018. PMID 30325352, doi:10.1038/sdata.2018.202"
+    dataset_doi: 10.7937/K9/TCIA.2017.7hs46erv
+    license: CC BY 3.0
+    access: Open (TCIA Data Usage Policy); RNA-seq for a 130-subject subset is hosted externally
+    size: "98 GB"
+    suitable_for: [segmentation, radiogenomics, survival]
+  - id: head-neck-pet-ct
+    name: Head-Neck-PET-CT
+    cancer_type: Head and neck cancer
+    body_region: Head and neck
+    modality: PET, CT, RTSTRUCT, RTPLAN, RTDOSE, REG
+    format: DICOM
+    patients: "298 with images (300 in the clinical spreadsheet)"
+    images: "504 studies, 2,661 series, 123,271 images"
+    annotations: GTV primary and GTV lymph nodes (RTSTRUCT)
+    ground_truth: Clinical planning contours (annotator details not stated on the page)
+    outcomes: "Locoregional recurrence 45, distant metastases 40, deaths 56 (of 300); median follow-up 43 months"
+    download_url: https://www.cancerimagingarchive.net/collection/head-neck-pet-ct/
+    paper: "Vallieres et al., Sci Rep 2017. PMID 28860628, doi:10.1038/s41598-017-10371-5"
+    dataset_doi: 10.7937/K9/TCIA.2017.8oje5q00
+    license: "Clinical data and contour spreadsheets CC BY 3.0; images under the NIH Controlled Data Access Policy"
+    access: CONTROLLED for images (the page warns faces could be reconstructed)
+    size: "72.46 GB"
+    suitable_for: [research RTDOSE/RTPLAN import and DVH visualisation, distant-metastasis outcome research]
+    notes: Has the dose grids Module D needs, but needs a controlled-access request. Not a starter dataset.
+  - id: lumiere
+    name: LUMIERE (longitudinal glioblastoma MRI)
+    cancer_type: Glioblastoma
+    body_region: Brain
+    modality: MRI (T1, T1 contrast, T2, FLAIR)
+    format: NIfTI (skull-stripped; no DICOM headers); CSV
+    patients: "91"
+    images: "638 study dates, 2,487 images"
+    annotations: >-
+      Automated segmentations (DeepBraTumIA, HD-GLIO-AUTO), not manual. Expert RANO ratings for 616 timepoints
+      by one neuroradiologist.
+    ground_truth: Expert RANO response rating (single rater); MGMT/IDH1 pathology for a subset; overall survival
+    download_url: Figshare (linked from the paper)
+    paper: "Suter et al., Sci Data 2022. PMID 36522344, doi:10.1038/s41597-022-01881-7"
+    license: "Non-commercial use only (exact licence name not stated in the text reviewed)"
+    access: Open via Figshare
+    size: not stated
+    suitable_for: [longitudinal change analysis, progression research]
+    notes: Rare public dataset with serial scans and expert response labels, a natural next step for Module C.
+  - id: brats
+    name: BraTS (Brain Tumor Segmentation benchmark)
+    cancer_type: Glioma
+    body_region: Brain
+    modality: Multiparametric MRI
+    format: NIfTI
+    patients: "Varies by edition; MSD Task01 BrainTumour has 484 training / 266 test volumes"
+    annotations: Expert tumour sub-region labels (enhancing tumour, oedema, necrosis/non-enhancing)
+    ground_truth: Manual annotation by up to four raters (2012-2013 benchmark); inter-rater Dice 74-85%
+    download_url: not stated (access terms differ by edition; check the current challenge page)
+    paper: "Menze et al., IEEE TMI 2015. PMID 25494501; Bakas et al., Sci Data 2017. PMID 28872634"
+    license: not stated (edition-specific)
+    access: not stated (recent editions require registration)
+    size: "MSD Task01 BrainTumour tar: 7.61 GB (7,608,266,240 bytes, HTTP Content-Length)"
+    suitable_for: [MRI segmentation]

@@ -1,0 +1,31 @@
+# Local research deployment. Ports bind to 127.0.0.1 only; put an authenticated
+# TLS proxy in front before exposing this anywhere else (see docs/DEPLOYMENT.md).
+services:
+  api:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    environment:
+      ONCONOVA_AUTH_MODE: ${ONCONOVA_AUTH_MODE:-api_key}
+      ONCONOVA_API_KEYS_FILE: /srv/onconova/configs/api_keys.yaml
+      ONCONOVA_ALLOWED_ORIGINS: '["http://127.0.0.1:8080"]'
+      ONCONOVA_PSEUDONYM_SALT: ${ONCONOVA_PSEUDONYM_SALT:?set a random salt in .env}
+    volumes:
+      - onconova-data:/srv/onconova/data
+      - ./artifacts:/srv/onconova/artifacts:ro
+      - ./configs:/srv/onconova/configs:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [internal]
+
+  web:
+    build: { context: ., dockerfile: frontend/Dockerfile }
+    depends_on: [api]
+    ports: ["127.0.0.1:8080:8080"]
+    networks: [internal]
+
+networks:
+  internal: {}
+
+volumes:
+  onconova-data: {}

@@ -1,0 +1,42 @@
+# --- Medical images and derived data: never commit ---
+/data/
+*.nii
+*.nii.gz
+*.dcm
+*.DCM
+*.mha
+*.mhd
+*.nrrd
+*.zip
+*.tar
+
+# --- Model weights and run outputs (regenerate with make) ---
+artifacts/models/
+artifacts/experiments/
+artifacts/*.log
+*.pt
+*.pth
+*.ckpt
+*.joblib
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+configs/api_keys.yaml
+*.pem
+*.key
+
+# --- Tooling ---
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+.DS_Store
+.claude/settings.local.json
+# Machine-specific preview config (absolute local paths)
+.claude/launch.json

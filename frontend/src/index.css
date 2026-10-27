@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-ink-950 text-ink-100 font-sans antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+::selection {
+  background: rgba(76, 155, 255, 0.35);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2e3f5e transparent;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-xl border border-ink-700/70 bg-ink-900/80 shadow-panel;
+  }
+  .panel-header {
+    @apply flex items-center justify-between gap-3 border-b border-ink-700/60 px-4 py-2.5;
+  }
+  .panel-title {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-300;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-ink-950 hover:bg-accent-glow;
+  }
+  .btn-ghost {
+    @apply btn border border-ink-700 bg-ink-850 text-ink-200 hover:border-ink-500 hover:bg-ink-800;
+  }
+  .btn-danger {
+    @apply btn border border-ev-review/40 bg-ev-review/10 text-ev-review hover:bg-ev-review/20;
+  }
+  .input {
+    @apply rounded-lg border border-ink-700 bg-ink-925 px-2.5 py-1.5 text-[13px] text-ink-100 placeholder:text-ink-500 focus:border-accent focus:outline-none;
+  }
+  .label {
+    @apply text-[11px] font-medium uppercase tracking-wider text-ink-400;
+  }
+  .mono {
+    @apply font-mono text-[12px];
+  }
+  .kv {
+    @apply grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1 text-[13px];
+  }
+  .table-base {
+    @apply w-full text-left text-[12.5px];
+  }
+  .table-base th {
+    @apply border-b border-ink-700 px-3 py-2 text-[10.5px] font-semibold uppercase tracking-wider text-ink-400;
+  }
+  .table-base td {
+    @apply border-b border-ink-800 px-3 py-2 align-top text-ink-200;
+  }
+}
+
+input[type="range"] {
+  @apply h-1 w-full cursor-pointer appearance-none rounded-full bg-ink-700;
+}
+input[type="range"]::-webkit-slider-thumb {
+  @apply h-3.5 w-3.5 appearance-none rounded-full border-2 border-ink-950 bg-accent;
+}
+input[type="range"]::-moz-range-thumb {
+  @apply h-3.5 w-3.5 rounded-full border-2 border-ink-950 bg-accent;
+}
+
+.sim-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(229, 140, 255, 0.1) 0,
+    rgba(229, 140, 255, 0.1) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}

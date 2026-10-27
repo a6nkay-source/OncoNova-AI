@@ -1,0 +1,1038 @@
+{
+  "report_id": "segmentation-demo-unet-20261027T070429Z",
+  "task": "segmentation",
+  "model": {
+    "id": "demo-unet",
+    "version": "0.1.0",
+    "kind": "deep-learning",
+    "checkpoint_sha256": "b964d38dd42c8b7f90a9e1a128e3430f3bc406c609ee1c51d11701263563130d",
+    "label": "DEMO MODEL - trained or tuned on synthetic phantoms only; not validated on patients."
+  },
+  "dataset": {
+    "id": "synthetic-seg-v1",
+    "label": "DEMO DATA",
+    "generator": "thorax-phantom-0.1",
+    "split": "test",
+    "n_patients": 9,
+    "n_scans": 18,
+    "patient_counts_by_split": {
+      "train": 42,
+      "val": 9,
+      "test": 9
+    }
+  },
+  "protocol": "Patient-separated test split from the manifest. Per-scan metrics against generator ground truth, averaged per patient; mean, median and 2000-sample patient bootstrap 95% CI across patients. Specificity is computed inside the body mask. Class metrics only on scans where the class exists.",
+  "results": {
+    "any_lesion": {
+      "dice": {
+        "n_patients": 9,
+        "mean": 0.9201,
+        "median": 0.9411,
+        "std": 0.0604,
+        "ci95": [
+          0.876,
+          0.9466
+        ]
+      },
+      "iou": {
+        "n_patients": 9,
+        "mean": 0.8572,
+        "median": 0.8888,
+        "std": 0.092,
+        "ci95": [
+          0.7898,
+          0.8985
+        ]
+      },
+      "hausdorff_mm": {
+        "n_patients": 9,
+        "mean": 33.599,
+        "median": 2.35,
+        "std": 45.9152,
+        "ci95": [
+          2.35,
+          65.2149
+        ]
+      },
+      "hd95_mm": {
+        "n_patients": 9,
+        "mean": 19.2731,
+        "median": 2.2,
+        "std": 32.2141,
+        "ci95": [
+          2.2,
+          43.7954
+        ]
+      },
+      "mean_surface_distance_mm": {
+        "n_patients": 9,
+        "mean": 3.3379,
+        "median": 0.4957,
+        "std": 5.7637,
+        "ci95": [
+          0.478,
+          7.4854
+        ]
+      },
+      "sensitivity": {
+        "n_patients": 9,
+        "mean": 0.9463,
+        "median": 0.9979,
+        "std": 0.1042,
+        "ci95": [
+          0.8685,
+          0.9957
+        ]
+      },
+      "specificity": {
+        "n_patients": 9,
+        "mean": 0.9999,
+        "median": 0.9999,
+        "std": 0.0,
+        "ci95": [
+          0.9999,
+          0.9999
+        ]
+      },
+      "n_scans": 18
+    },
+    "primary_tumor": {
+      "dice": {
+        "n_patients": 9,
+        "mean": 0.9399,
+        "median": 0.9411,
+        "std": 0.0145,
+        "ci95": [
+          0.93,
+          0.9487
+        ]
+      },
+      "iou": {
+        "n_patients": 9,
+        "mean": 0.8872,
+        "median": 0.8888,
+        "std": 0.025,
+        "ci95": [
+          0.8704,
+          0.9026
+        ]
+      },
+      "hausdorff_mm": {
+        "n_patients": 9,
+        "mean": 36.8917,
+        "median": 2.35,
+        "std": 42.1665,
+        "ci95": [
+          9.0556,
+          64.9197
+        ]
+      },
+      "hd95_mm": {
+        "n_patients": 9,
+        "mean": 22.7057,
+        "median": 2.2,
+        "std": 29.1018,
+        "ci95": [
+          2.2,
+          43.2634
+        ]
+      },
+      "mean_surface_distance_mm": {
+        "n_patients": 9,
+        "mean": 2.1518,
+        "median": 0.5232,
+        "std": 2.4033,
+        "ci95": [
+          0.7793,
+          3.8206
+        ]
+      },
+      "sensitivity": {
+        "n_patients": 9,
+        "mean": 0.9991,
+        "median": 1.0,
+        "std": 0.0012,
+        "ci95": [
+          0.9983,
+          0.9998
+        ]
+      },
+      "specificity": {
+        "n_patients": 9,
+        "mean": 0.9999,
+        "median": 0.9999,
+        "std": 0.0,
+        "ci95": [
+          0.9999,
+          0.9999
+        ]
+      },
+      "n_scans": 18
+    },
+    "lymph_node_region_lesion": {
+      "dice": {
+        "n_patients": 2,
+        "mean": 0.0,
+        "median": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "iou": {
+        "n_patients": 2,
+        "mean": 0.0,
+        "median": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "hausdorff_mm": {
+        "n_patients": 0,
+        "mean": null,
+        "median": null,
+        "ci95": [
+          null,
+          null
+        ]
+      },
+      "hd95_mm": {
+        "n_patients": 0,
+        "mean": null,
+        "median": null,
+        "ci95": [
+          null,
+          null
+        ]
+      },
+      "mean_surface_distance_mm": {
+        "n_patients": 0,
+        "mean": null,
+        "median": null,
+        "ci95": [
+          null,
+          null
+        ]
+      },
+      "sensitivity": {
+        "n_patients": 2,
+        "mean": 0.0,
+        "median": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "specificity": {
+        "n_patients": 2,
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "n_scans": 4
+    },
+    "other_lesion": {
+      "dice": {
+        "n_patients": 3,
+        "mean": 0.0,
+        "median": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "iou": {
+        "n_patients": 3,
+        "mean": 0.0,
+        "median": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "hausdorff_mm": {
+        "n_patients": 0,
+        "mean": null,
+        "median": null,
+        "ci95": [
+          null,
+          null
+        ]
+      },
+      "hd95_mm": {
+        "n_patients": 0,
+        "mean": null,
+        "median": null,
+        "ci95": [
+          null,
+          null
+        ]
+      },
+      "mean_surface_distance_mm": {
+        "n_patients": 0,
+        "mean": null,
+        "median": null,
+        "ci95": [
+          null,
+          null
+        ]
+      },
+      "sensitivity": {
+        "n_patients": 3,
+        "mean": 0.0,
+        "median": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "specificity": {
+        "n_patients": 3,
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "n_scans": 3
+    },
+    "lesion_detection": {
+      "reference_lesions": 25,
+      "detected": 21,
+      "lesion_sensitivity": 0.84,
+      "false_positive_components_per_scan": 0.1111
+    },
+    "class_confusion_voxels": {
+      "rows_reference_cols_predicted": [
+        "background",
+        "primary_tumor",
+        "lymph_node_region_lesion",
+        "other_lesion"
+      ],
+      "matrix": [
+        [
+          21223437,
+          922,
+          1,
+          0
+        ],
+        [
+          8,
+          8714,
+          0,
+          0
+        ],
+        [
+          375,
+          0,
+          0,
+          0
+        ],
+        [
+          51,
+          155,
+          1,
+          0
+        ]
+      ],
+      "note": "Voxel counts over all test scans. Off-diagonal entries show missed or mislabelled lesion voxels."
+    }
+  },
+  "per_scan": [
+    {
+      "patient_id": "SYN-0001",
+      "scan_id": "SYN-0001-T0",
+      "any_lesion": {
+        "dice": 0.946980854197349,
+        "iou": 0.8993006993006993,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.4881081185899339,
+        "sensitivity": 1.0,
+        "specificity": 0.9998794464583212,
+        "specificity_roi": "body",
+        "pred_volume_cc": 8.651500375032429,
+        "ref_volume_cc": 7.780300337266926
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.946980854197349,
+        "iou": 0.8993006993006993,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.4881081185899339,
+        "sensitivity": 1.0,
+        "specificity": 0.9998794464583212,
+        "specificity_roi": "body",
+        "pred_volume_cc": 8.651500375032429,
+        "ref_volume_cc": 7.780300337266926
+      }
+    },
+    {
+      "patient_id": "SYN-0001",
+      "scan_id": "SYN-0001-T1",
+      "any_lesion": {
+        "dice": 0.9328449328449329,
+        "iou": 0.8741418764302059,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.5583756466202324,
+        "sensitivity": 1.0,
+        "specificity": 0.9999079728938342,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.287700229215624,
+        "ref_volume_cc": 4.622200200366976
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9328449328449329,
+        "iou": 0.8741418764302059,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.5583756466202324,
+        "sensitivity": 1.0,
+        "specificity": 0.9999079728938342,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.287700229215624,
+        "ref_volume_cc": 4.622200200366976
+      }
+    },
+    {
+      "patient_id": "SYN-0002",
+      "scan_id": "SYN-0002-T0",
+      "any_lesion": {
+        "dice": 0.948051948051948,
+        "iou": 0.9012345679012346,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.42547170733505824,
+        "sensitivity": 0.9931972789115646,
+        "specificity": 0.9999246795113207,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.844300253343585,
+        "ref_volume_cc": 5.336100231313708
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.948051948051948,
+        "iou": 0.9012345679012346,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.42547170733505824,
+        "sensitivity": 0.9931972789115646,
+        "specificity": 0.9999246795113207,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.844300253343585,
+        "ref_volume_cc": 5.336100231313708
+      }
+    },
+    {
+      "patient_id": "SYN-0002",
+      "scan_id": "SYN-0002-T1",
+      "any_lesion": {
+        "dice": 0.9542395693135935,
+        "iou": 0.9124839124839125,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.36476044050508527,
+        "sensitivity": 0.9659400544959128,
+        "specificity": 0.9999280958098251,
+        "specificity_roi": "body",
+        "pred_volume_cc": 9.099200394439702,
+        "ref_volume_cc": 8.881400384998326
+      },
+      "detection": {
+        "reference_lesions": 2,
+        "detected": 2,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9415081042988019,
+        "iou": 0.8894806924101198,
+        "hausdorff_mm": 123.20000267028809,
+        "hd95_mm": 118.80000257492065,
+        "mean_surface_distance_mm": 7.08443774509999,
+        "sensitivity": 1.0,
+        "specificity": 0.9998612235070659,
+        "specificity_roi": "body",
+        "pred_volume_cc": 9.08710039391518,
+        "ref_volume_cc": 8.082800350379948
+      },
+      "other_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": null,
+        "hd95_mm": null,
+        "mean_surface_distance_mm": null,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "specificity_roi": "body",
+        "pred_volume_cc": 0.0,
+        "ref_volume_cc": 0.798600034618378
+      }
+    },
+    {
+      "patient_id": "SYN-0008",
+      "scan_id": "SYN-0008-T0",
+      "any_lesion": {
+        "dice": 0.9427860696517413,
+        "iou": 0.8917647058823529,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.4767624124223196,
+        "sensitivity": 0.9973684210526316,
+        "specificity": 0.9999246872008408,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.130400222396853,
+        "ref_volume_cc": 4.5980001993179345
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9427860696517413,
+        "iou": 0.8917647058823529,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.4767624124223196,
+        "sensitivity": 0.9973684210526316,
+        "specificity": 0.9999246872008408,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.130400222396853,
+        "ref_volume_cc": 4.5980001993179345
+      }
+    },
+    {
+      "patient_id": "SYN-0008",
+      "scan_id": "SYN-0008-T1",
+      "any_lesion": {
+        "dice": 0.96,
+        "iou": 0.9230769230769231,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.3086319284252701,
+        "sensitivity": 0.9984,
+        "specificity": 0.9999146516364293,
+        "specificity_roi": "body",
+        "pred_volume_cc": 8.167500354051594,
+        "ref_volume_cc": 7.56250032782555
+      },
+      "detection": {
+        "reference_lesions": 2,
+        "detected": 2,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.872393661384487,
+        "iou": 0.7736686390532544,
+        "hausdorff_mm": 121.9487213636263,
+        "hd95_mm": 119.73643064337372,
+        "mean_surface_distance_mm": 15.450667129966542,
+        "sensitivity": 0.9980916030534351,
+        "specificity": 0.9997456713940555,
+        "specificity_roi": "body",
+        "pred_volume_cc": 8.167500354051594,
+        "ref_volume_cc": 6.340400274848941
+      },
+      "other_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": null,
+        "hd95_mm": null,
+        "mean_surface_distance_mm": null,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "specificity_roi": "body",
+        "pred_volume_cc": 0.0,
+        "ref_volume_cc": 1.2221000529766088
+      }
+    },
+    {
+      "patient_id": "SYN-0013",
+      "scan_id": "SYN-0013-T0",
+      "any_lesion": {
+        "dice": 0.9413629160063391,
+        "iou": 0.8892215568862275,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.4216301030126111,
+        "sensitivity": 1.0,
+        "specificity": 0.9999380847435788,
+        "specificity_roi": "body",
+        "pred_volume_cc": 4.041400175189974,
+        "ref_volume_cc": 3.593700155782701
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9413629160063391,
+        "iou": 0.8892215568862275,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.4216301030126111,
+        "sensitivity": 1.0,
+        "specificity": 0.9999380847435788,
+        "specificity_roi": "body",
+        "pred_volume_cc": 4.041400175189974,
+        "ref_volume_cc": 3.593700155782701
+      }
+    },
+    {
+      "patient_id": "SYN-0013",
+      "scan_id": "SYN-0013-T1",
+      "any_lesion": {
+        "dice": 0.9408602150537635,
+        "iou": 0.8883248730964467,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.32592593299018013,
+        "sensitivity": 1.0,
+        "specificity": 0.9999632240474611,
+        "specificity_roi": "body",
+        "pred_volume_cc": 2.383700103330613,
+        "ref_volume_cc": 2.117500091791154
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9408602150537635,
+        "iou": 0.8883248730964467,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.32592593299018013,
+        "sensitivity": 1.0,
+        "specificity": 0.9999632240474611,
+        "specificity_roi": "body",
+        "pred_volume_cc": 2.383700103330613,
+        "ref_volume_cc": 2.117500091791154
+      }
+    },
+    {
+      "patient_id": "SYN-0014",
+      "scan_id": "SYN-0014-T0",
+      "any_lesion": {
+        "dice": 0.916030534351145,
+        "iou": 0.8450704225352113,
+        "hausdorff_mm": 73.14048276173943,
+        "hd95_mm": 69.82784585252766,
+        "mean_surface_distance_mm": 5.774958490094849,
+        "sensitivity": 0.9051724137931034,
+        "specificity": 0.9999447628484962,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.481300237607958,
+        "ref_volume_cc": 5.6144002433776885
+      },
+      "detection": {
+        "reference_lesions": 2,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9621993127147767,
+        "iou": 0.9271523178807947,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.26699029704899463,
+        "sensitivity": 1.0,
+        "specificity": 0.9999447669163871,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.481300237607958,
+        "ref_volume_cc": 5.082000220298769
+      },
+      "lymph_node_region_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": null,
+        "hd95_mm": null,
+        "mean_surface_distance_mm": null,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "specificity_roi": "body",
+        "pred_volume_cc": 0.0,
+        "ref_volume_cc": 0.5324000230789186
+      }
+    },
+    {
+      "patient_id": "SYN-0014",
+      "scan_id": "SYN-0014-T1",
+      "any_lesion": {
+        "dice": 0.9183333333333333,
+        "iou": 0.8489984591679507,
+        "hausdorff_mm": 72.07392185739884,
+        "hd95_mm": 69.19883382690993,
+        "mean_surface_distance_mm": 5.511277761061168,
+        "sensitivity": 0.9107438016528926,
+        "specificity": 0.9999262975401804,
+        "specificity_roi": "body",
+        "pred_volume_cc": 7.199500312089923,
+        "ref_volume_cc": 7.320500317335132
+      },
+      "detection": {
+        "reference_lesions": 2,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9616055846422339,
+        "iou": 0.9260504201680673,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.31361789286621217,
+        "sensitivity": 1.0,
+        "specificity": 0.9999263042061874,
+        "specificity_roi": "body",
+        "pred_volume_cc": 7.199500312089923,
+        "ref_volume_cc": 6.667100289011005
+      },
+      "lymph_node_region_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": null,
+        "hd95_mm": null,
+        "mean_surface_distance_mm": null,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "specificity_roi": "body",
+        "pred_volume_cc": 0.0,
+        "ref_volume_cc": 0.6534000283241275
+      }
+    },
+    {
+      "patient_id": "SYN-0033",
+      "scan_id": "SYN-0033-T0",
+      "any_lesion": {
+        "dice": 0.9420160570918823,
+        "iou": 0.8903878583473862,
+        "hausdorff_mm": 125.81733061020307,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 3.27222208589128,
+        "sensitivity": 0.998109640831758,
+        "specificity": 0.999892861746454,
+        "specificity_roi": "body",
+        "pred_volume_cc": 7.163200310516361,
+        "ref_volume_cc": 6.400900277471545
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 1
+      },
+      "primary_tumor": {
+        "dice": 0.9420160570918823,
+        "iou": 0.8903878583473862,
+        "hausdorff_mm": 125.81733061020307,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 3.27222208589128,
+        "sensitivity": 0.998109640831758,
+        "specificity": 0.999892861746454,
+        "specificity_roi": "body",
+        "pred_volume_cc": 7.163200310516361,
+        "ref_volume_cc": 6.400900277471545
+      }
+    },
+    {
+      "patient_id": "SYN-0033",
+      "scan_id": "SYN-0033-T1",
+      "any_lesion": {
+        "dice": 0.9431524547803618,
+        "iou": 0.8924205378973105,
+        "hausdorff_mm": 123.6051805466057,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 2.393986588096679,
+        "sensitivity": 0.9986320109439124,
+        "specificity": 0.9998543096706561,
+        "specificity_roi": "body",
+        "pred_volume_cc": 9.885700428533559,
+        "ref_volume_cc": 8.845100383424763
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 1
+      },
+      "primary_tumor": {
+        "dice": 0.9437621202327084,
+        "iou": 0.8935128518971848,
+        "hausdorff_mm": 121.23221780809862,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 2.195929081628527,
+        "sensitivity": 0.9986320109439124,
+        "specificity": 0.9998559842721428,
+        "specificity_roi": "body",
+        "pred_volume_cc": 9.873600428009038,
+        "ref_volume_cc": 8.845100383424763
+      }
+    },
+    {
+      "patient_id": "SYN-0036",
+      "scan_id": "SYN-0036-T0",
+      "any_lesion": {
+        "dice": 0.7470449172576832,
+        "iou": 0.5962264150943396,
+        "hausdorff_mm": 89.89527432503876,
+        "hd95_mm": 87.3532425321186,
+        "mean_surface_distance_mm": 18.197224697706346,
+        "sensitivity": 0.6666666666666666,
+        "specificity": 0.9999062626587257,
+        "specificity_roi": "body",
+        "pred_volume_cc": 4.5012001951217675,
+        "ref_volume_cc": 5.735400248622897
+      },
+      "detection": {
+        "reference_lesions": 2,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9186046511627907,
+        "iou": 0.8494623655913979,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.6136094804346208,
+        "sensitivity": 1.0,
+        "specificity": 0.9999062874431868,
+        "specificity_roi": "body",
+        "pred_volume_cc": 4.5012001951217675,
+        "ref_volume_cc": 3.823600165748598
+      },
+      "lymph_node_region_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": null,
+        "hd95_mm": null,
+        "mean_surface_distance_mm": null,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "specificity_roi": "body",
+        "pred_volume_cc": 0.0,
+        "ref_volume_cc": 1.911800082874299
+      }
+    },
+    {
+      "patient_id": "SYN-0036",
+      "scan_id": "SYN-0036-T1",
+      "any_lesion": {
+        "dice": 0.7570247933884298,
+        "iou": 0.6090425531914894,
+        "hausdorff_mm": 92.04998839200606,
+        "hd95_mm": 89.46563489088489,
+        "mean_surface_distance_mm": 19.655354138763375,
+        "sensitivity": 0.6580459770114943,
+        "specificity": 0.999953186338436,
+        "specificity_roi": "body",
+        "pred_volume_cc": 3.1097001348018662,
+        "ref_volume_cc": 4.210800182533266
+      },
+      "detection": {
+        "reference_lesions": 2,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9423868312757202,
+        "iou": 0.8910505836575876,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.3694656568629141,
+        "sensitivity": 1.0,
+        "specificity": 0.9999531956505386,
+        "specificity_roi": "body",
+        "pred_volume_cc": 3.1097001348018662,
+        "ref_volume_cc": 2.7709001201152814
+      },
+      "lymph_node_region_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": null,
+        "hd95_mm": null,
+        "mean_surface_distance_mm": null,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "specificity_roi": "body",
+        "pred_volume_cc": 0.0,
+        "ref_volume_cc": 1.4399000624179847
+      }
+    },
+    {
+      "patient_id": "SYN-0043",
+      "scan_id": "SYN-0043-T0",
+      "any_lesion": {
+        "dice": 0.946969696969697,
+        "iou": 0.8992805755395683,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.3815498237680245,
+        "sensitivity": 1.0,
+        "specificity": 0.9999531488961545,
+        "specificity_roi": "body",
+        "pred_volume_cc": 3.3638001458168043,
+        "ref_volume_cc": 3.02500013113022
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.946969696969697,
+        "iou": 0.8992805755395683,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.3815498237680245,
+        "sensitivity": 1.0,
+        "specificity": 0.9999531488961545,
+        "specificity_roi": "body",
+        "pred_volume_cc": 3.3638001458168043,
+        "ref_volume_cc": 3.02500013113022
+      }
+    },
+    {
+      "patient_id": "SYN-0043",
+      "scan_id": "SYN-0043-T1",
+      "any_lesion": {
+        "dice": 0.9145945945945946,
+        "iou": 0.8426294820717132,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.4700000047683646,
+        "mean_surface_distance_mm": 0.6098654826125757,
+        "sensitivity": 0.9420935412026726,
+        "specificity": 0.9999113841297337,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.759600249671939,
+        "ref_volume_cc": 5.432900235509875
+      },
+      "detection": {
+        "reference_lesions": 2,
+        "detected": 2,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9242937853107345,
+        "iou": 0.8592436974789915,
+        "hausdorff_mm": 141.7531687607377,
+        "hd95_mm": 137.16627574330712,
+        "mean_surface_distance_mm": 5.171999622094916,
+        "sensitivity": 1.0,
+        "specificity": 0.999887983655645,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.759600249671939,
+        "ref_volume_cc": 4.94890021452904
+      },
+      "other_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": null,
+        "hd95_mm": null,
+        "mean_surface_distance_mm": null,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "specificity_roi": "body",
+        "pred_volume_cc": 0.0,
+        "ref_volume_cc": 0.48400002098083517
+      }
+    },
+    {
+      "patient_id": "SYN-0058",
+      "scan_id": "SYN-0058-T0",
+      "any_lesion": {
+        "dice": 0.963314630988347,
+        "iou": 0.929225645295587,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.4064039496952677,
+        "sensitivity": 1.0,
+        "specificity": 0.9998575670440302,
+        "specificity_roi": "body",
+        "pred_volume_cc": 14.532100629949577,
+        "ref_volume_cc": 13.503600585365302
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.963314630988347,
+        "iou": 0.929225645295587,
+        "hausdorff_mm": 2.200000047683716,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.4064039496952677,
+        "sensitivity": 1.0,
+        "specificity": 0.9998575670440302,
+        "specificity_roi": "body",
+        "pred_volume_cc": 14.532100629949577,
+        "ref_volume_cc": 13.503600585365302
+      }
+    },
+    {
+      "patient_id": "SYN-0058",
+      "scan_id": "SYN-0058-T1",
+      "any_lesion": {
+        "dice": 0.9455587392550143,
+        "iou": 0.8967391304347826,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.5098765539744544,
+        "sensitivity": 0.9984871406959153,
+        "specificity": 0.9998745103813379,
+        "specificity_roi": "body",
+        "pred_volume_cc": 8.893500385522847,
+        "ref_volume_cc": 7.998100346708301
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 0
+      },
+      "primary_tumor": {
+        "dice": 0.9455587392550143,
+        "iou": 0.8967391304347826,
+        "hausdorff_mm": 2.5,
+        "hd95_mm": 2.200000047683716,
+        "mean_surface_distance_mm": 0.5098765539744544,
+        "sensitivity": 0.9984871406959153,
+        "specificity": 0.9998745103813379,
+        "specificity_roi": "body",
+        "pred_volume_cc": 8.893500385522847,
+        "ref_volume_cc": 7.998100346708301
+      }
+    }
+  ],
+  "runtime_s": 11.7,
+  "onconova_version": "0.1.0",
+  "caveat": "Synthetic phantoms with exact ground truth. These numbers do not describe performance on patients.",
+  "created_utc": "2026-10-27T07:04:29+00:00"
+}

@@ -1,0 +1,62 @@
+# Architecture
+
+```
+ Browser (React + TS, Vite)                 FastAPI (Python)                         Storage (local disk)
+ ─────────────────────────                 ────────────────                         ────────────────────
+ Pages ──► api/client.ts ──HTTP /api──►  routes_*  ──► services.py ──► models       data/cases/<id>/…  (NIfTI + JSON)
+ Viewer ◄── binary volumes (int16/uint8)  deps.py (auth, audit)          │          data/audit/audit.jsonl
+ Three.js ◄── surface meshes (JSON)        binary.py                     ▼          artifacts/models/…  (weights + cards)
+                                            app.py (errors, CORS,    imaging/ segmentation/ longitudinal/ artifacts/evaluations/*.json
+                                            logging, safety guard)   progression/ dose/ data/ synthetic/
+```
+
+## Principles
+
+1. **The UI never touches model internals.** Pages call typed client functions; routes call `services.py`; services call models and the store. Models can be swapped without UI changes.
+2. **Geometry travels with voxels.** `imaging.volume.Volume` holds the array (z, y, x) plus spacing, origin and direction in ITK/LPS conventions. Loaders reorient to LPS with `DICOMOrient` (a permutation and flip, no resampling), so physical coordinates are preserved exactly. Volumes are computed as voxel count × voxel volume. Distances use the spacing.
+3. **Evidence is typed.** Every statement returned to the UI is a `finding(kind, text)`, where `kind` is one of `measured`, `measured_from_model_output`, `model_output`, `uncertain`, `requires_expert_review`, `simulated` or `unavailable`. The UI renders each kind with its own badge.
+4. **Missing inputs give an explicit unavailable state** (`safety.unavailable`), never an extrapolated answer.
+5. **Results carry provenance.** Each stored result records software version, data label, generator or upload source, model id/version and checkpoint or artifact SHA-256. Checkpoints whose hash does not match their model card are refused.
+6. **Nothing leaves the server.** The package imports no network clients (enforced by a test). There is no device interface (runtime guard plus static test).
+
+## Modules
+
+| Package | Responsibility |
+|---|---|
+| `imaging.io` | NIfTI and DICOM-series loading, slice-spacing and orientation checks, technical metadata (PHI listed by keyword only), validation with stable error codes |
+| `imaging.normalize` | CT HU windows; MR foreground z-score; PET percentile scaling (no SUV) |
+| `imaging.registration` | Rigid Euler-3-D registration (Mattes MI, 3-level pyramid) and resampling (nearest for labels) |
+| `imaging.deid` | Profile-driven DICOM de-identification (remove, blank, HMAC pseudonyms, UID remap, private tags) |
+| `segmentation.classical` | Lung-envelope + density + shape heuristic; heuristic entropy uncertainty inside the envelope |
+| `segmentation.unet` | MONAI 3-D U-Net, MC-dropout entropy, input-gradient saliency, small-component post-processing, checkpoint hash check |
+| `segmentation.metrics` / `measure` | Dice, IoU, Hausdorff, HD95, MSD, sensitivity, specificity (with ROI); cc volumes, max axial diameter, sphericity, marching-cubes meshes |
+| `longitudinal.compare` | Registers follow-ups to baseline, tracks lesions across time, reports persisting / new / not-segmented regions, change and centroid shift |
+| `progression` | Feature extraction from longitudinal output, simulated cohort, logistic + bootstrap ensemble, AUROC / AUPRC / Brier / C-index / calibration with bootstrap CIs |
+| `dose` | Geometric illustration (relative units), DVH maths and indices, RTDOSE/NIfTI import resampled to the image grid |
+| `data` | Patient-level and temporal splits, leakage checks, synthetic and MSD manifests |
+| `store` | Filesystem case store with ID validation (no path traversal) and an LRU volume cache |
+| `uploads` | Streaming size limit, extension allow-list, magic bytes, ZIP member/size/ratio limits, zip-slip and symlink rejection, de-identification before parsing, private temp dirs |
+| `security` / `audit` | Hashed API keys with roles (viewer < researcher < admin), localhost-only dev mode, JSONL audit log |
+
+## Data flow for one case
+
+1. **Ingest:** upload → validate → (DICOM) de-identify → convert → `image.nii.gz` + `case.json`.
+2. **Segment:** `POST …/segmentation` → model → `pred_<model>.nii.gz`, `unc_<model>.nii.gz`, optional saliency → summary JSON with lesions, uncertainty, OOD warnings and findings.
+3. **Observed change:** `POST /longitudinal` → registration per follow-up → tracks → findings (new regions go to expert review).
+4. **Risk:** `POST /progression` → features from the longitudinal result → model, or unavailable.
+5. **Simulation:** `POST /dose` → illustrative target (contour + margin) → relative dose → DVHs.
+6. **Summary:** `GET /summary` assembles sections A-G from whatever has actually been computed.
+
+## Frontend
+
+- `viewer/SliceView.tsx` renders one plane into an offscreen canvas at native resolution (window/level, label fills or outlines, LUT maps), then scales it to physical aspect ratio with a crosshair. Display is radiological. Wheel scrolls slices. A brush paints annotations on the axial plane.
+- `viewer/CaseViewer.tsx` loads the image and overlays (shared request cache) and lays out the planes.
+- `components/Volume3D.tsx` builds three.js meshes from server-side marching cubes, in LPS, viewed from anterior.
+- `components/charts.tsx` provides dependency-free SVG line, interval, forest, strip and diverging-bar charts.
+
+## Why these choices
+
+- **Filesystem store, not a database:** single-user research prototype, easy to inspect and delete. The store interface is small enough to swap later.
+- **Server-side meshing, client-side slicing:** slicing a 128×128×72 volume in the browser is instant and makes overlay opacity and window changes free. Marching cubes stays in Python (scikit-image).
+- **Classical baseline next to the U-Net:** a transparent reference shows what learning adds, and fails in known, documented ways.
+- **Simulated progression cohort:** no public dataset combines these imaging features with a progression label, so a planted-signal cohort is the honest way to exercise splits, calibration and CIs end to end.

@@ -1,0 +1,895 @@
+{
+  "report_id": "progression-demo-20261027T062128Z",
+  "task": "future_progression_risk",
+  "model": {
+    "id": "progression-demo",
+    "version": "0.1.0",
+    "artifact_sha256": "0db41d16c04ce96d87890acdc6a0cc7ca76cc6114eebd06bace828af810a91e5"
+  },
+  "dataset": {
+    "id": "progression-cohort-v1",
+    "label": "DEMO DATA",
+    "n_patients": 900,
+    "seed": 7,
+    "split_counts": {
+      "train": 366,
+      "test": 79,
+      "val": 78,
+      "temporal_test": 177,
+      "external_test": 200
+    },
+    "temporal_cutoff": "2021-01-01",
+    "missingness_by_split": {
+      "train": {
+        "baseline_total_volume_cc": 0.0,
+        "log_volume_ratio_per_100d": 0.0,
+        "new_lesion_count": 0.0,
+        "node_region_lesion_observed": 0.0,
+        "primary_sphericity": 0.0413,
+        "age_years": 0.1475
+      },
+      "temporal": {
+        "baseline_total_volume_cc": 0.0,
+        "log_volume_ratio_per_100d": 0.0,
+        "new_lesion_count": 0.0,
+        "node_region_lesion_observed": 0.0,
+        "primary_sphericity": 0.0169,
+        "age_years": 0.1356
+      },
+      "external": {
+        "baseline_total_volume_cc": 0.0,
+        "log_volume_ratio_per_100d": 0.0,
+        "new_lesion_count": 0.0,
+        "node_region_lesion_observed": 0.0,
+        "primary_sphericity": 0.045,
+        "age_years": 0.145
+      }
+    }
+  },
+  "protocol": "Patient-level splits; threshold chosen on validation (Youden); metrics on held-out internal, temporal and external (unseen site) sets; 95% CIs by 1000-sample patient bootstrap (300 for C-index).",
+  "results": {
+    "internal_test": {
+      "n": 76,
+      "n_events": 30,
+      "prevalence": 0.3947,
+      "auroc": {
+        "value": 0.8384,
+        "ci95": [
+          0.7396,
+          0.9176
+        ],
+        "metric": "AUROC"
+      },
+      "auprc": {
+        "value": 0.7769,
+        "ci95": [
+          0.6296,
+          0.8996
+        ],
+        "metric": "AUPRC"
+      },
+      "brier": {
+        "value": 0.169,
+        "ci95": [
+          0.1261,
+          0.2167
+        ],
+        "metric": "Brier"
+      },
+      "threshold": 0.5185,
+      "threshold_source": "Youden index on the validation split",
+      "sensitivity": {
+        "value": 0.7667,
+        "ci95": [
+          0.6071,
+          0.9091
+        ],
+        "metric": "Sensitivity"
+      },
+      "specificity": {
+        "value": 0.8261,
+        "ci95": [
+          0.7072,
+          0.9302
+        ],
+        "metric": "Specificity"
+      },
+      "calibration": {
+        "bins": [
+          {
+            "mean_predicted": 0.1099,
+            "observed_fraction": 0.0,
+            "n": 8
+          },
+          {
+            "mean_predicted": 0.1679,
+            "observed_fraction": 0.1429,
+            "n": 7
+          },
+          {
+            "mean_predicted": 0.2548,
+            "observed_fraction": 0.125,
+            "n": 8
+          },
+          {
+            "mean_predicted": 0.3069,
+            "observed_fraction": 0.1429,
+            "n": 7
+          },
+          {
+            "mean_predicted": 0.3705,
+            "observed_fraction": 0.25,
+            "n": 8
+          },
+          {
+            "mean_predicted": 0.4963,
+            "observed_fraction": 0.25,
+            "n": 8
+          },
+          {
+            "mean_predicted": 0.5783,
+            "observed_fraction": 0.8571,
+            "n": 7
+          },
+          {
+            "mean_predicted": 0.7066,
+            "observed_fraction": 0.8571,
+            "n": 7
+          },
+          {
+            "mean_predicted": 0.842,
+            "observed_fraction": 0.5,
+            "n": 8
+          },
+          {
+            "mean_predicted": 0.9706,
+            "observed_fraction": 0.875,
+            "n": 8
+          }
+        ],
+        "expected_calibration_error": 0.1669,
+        "calibration_slope": 0.9397,
+        "calibration_intercept": -0.5284,
+        "binning": "quantile"
+      },
+      "c_index": {
+        "value": 0.7595,
+        "ci95": [
+          0.6953,
+          0.8228
+        ],
+        "metric": "Harrell's C (time to simulated event)",
+        "n": 79
+      },
+      "excluded_censored_before_horizon": 3
+    },
+    "temporal_validation": {
+      "n": 163,
+      "n_events": 95,
+      "prevalence": 0.5828,
+      "auroc": {
+        "value": 0.7935,
+        "ci95": [
+          0.7212,
+          0.856
+        ],
+        "metric": "AUROC"
+      },
+      "auprc": {
+        "value": 0.8587,
+        "ci95": [
+          0.7922,
+          0.9137
+        ],
+        "metric": "AUPRC"
+      },
+      "brier": {
+        "value": 0.1929,
+        "ci95": [
+          0.1652,
+          0.2235
+        ],
+        "metric": "Brier"
+      },
+      "threshold": 0.5185,
+      "threshold_source": "Youden index on the validation split",
+      "sensitivity": {
+        "value": 0.5579,
+        "ci95": [
+          0.4574,
+          0.6495
+        ],
+        "metric": "Sensitivity"
+      },
+      "specificity": {
+        "value": 0.8676,
+        "ci95": [
+          0.7812,
+          0.9459
+        ],
+        "metric": "Specificity"
+      },
+      "calibration": {
+        "bins": [
+          {
+            "mean_predicted": 0.1214,
+            "observed_fraction": 0.1765,
+            "n": 17
+          },
+          {
+            "mean_predicted": 0.2221,
+            "observed_fraction": 0.3125,
+            "n": 16
+          },
+          {
+            "mean_predicted": 0.2776,
+            "observed_fraction": 0.4375,
+            "n": 16
+          },
+          {
+            "mean_predicted": 0.3298,
+            "observed_fraction": 0.4375,
+            "n": 16
+          },
+          {
+            "mean_predicted": 0.3887,
+            "observed_fraction": 0.5,
+            "n": 16
+          },
+          {
+            "mean_predicted": 0.4493,
+            "observed_fraction": 0.5882,
+            "n": 17
+          },
+          {
+            "mean_predicted": 0.5583,
+            "observed_fraction": 0.75,
+            "n": 16
+          },
+          {
+            "mean_predicted": 0.697,
+            "observed_fraction": 0.6875,
+            "n": 16
+          },
+          {
+            "mean_predicted": 0.805,
+            "observed_fraction": 0.9375,
+            "n": 16
+          },
+          {
+            "mean_predicted": 0.9329,
+            "observed_fraction": 1.0,
+            "n": 17
+          }
+        ],
+        "expected_calibration_error": 0.1061,
+        "calibration_slope": 1.0893,
+        "calibration_intercept": 0.5938,
+        "binning": "quantile"
+      },
+      "c_index": {
+        "value": 0.7054,
+        "ci95": [
+          0.6565,
+          0.7513
+        ],
+        "metric": "Harrell's C (time to simulated event)",
+        "n": 177
+      },
+      "excluded_censored_before_horizon": 14
+    },
+    "external_validation_site_C": {
+      "n": 178,
+      "n_events": 75,
+      "prevalence": 0.4213,
+      "auroc": {
+        "value": 0.7692,
+        "ci95": [
+          0.6984,
+          0.8327
+        ],
+        "metric": "AUROC"
+      },
+      "auprc": {
+        "value": 0.7065,
+        "ci95": [
+          0.5992,
+          0.8055
+        ],
+        "metric": "AUPRC"
+      },
+      "brier": {
+        "value": 0.197,
+        "ci95": [
+          0.1669,
+          0.231
+        ],
+        "metric": "Brier"
+      },
+      "threshold": 0.5185,
+      "threshold_source": "Youden index on the validation split",
+      "sensitivity": {
+        "value": 0.6533,
+        "ci95": [
+          0.5441,
+          0.7539
+        ],
+        "metric": "Sensitivity"
+      },
+      "specificity": {
+        "value": 0.7573,
+        "ci95": [
+          0.6722,
+          0.835
+        ],
+        "metric": "Specificity"
+      },
+      "calibration": {
+        "bins": [
+          {
+            "mean_predicted": 0.0915,
+            "observed_fraction": 0.1111,
+            "n": 18
+          },
+          {
+            "mean_predicted": 0.1662,
+            "observed_fraction": 0.1111,
+            "n": 18
+          },
+          {
+            "mean_predicted": 0.2494,
+            "observed_fraction": 0.2778,
+            "n": 18
+          },
+          {
+            "mean_predicted": 0.3002,
+            "observed_fraction": 0.2941,
+            "n": 17
+          },
+          {
+            "mean_predicted": 0.3888,
+            "observed_fraction": 0.3889,
+            "n": 18
+          },
+          {
+            "mean_predicted": 0.4755,
+            "observed_fraction": 0.3333,
+            "n": 18
+          },
+          {
+            "mean_predicted": 0.5901,
+            "observed_fraction": 0.5882,
+            "n": 17
+          },
+          {
+            "mean_predicted": 0.7346,
+            "observed_fraction": 0.5556,
+            "n": 18
+          },
+          {
+            "mean_predicted": 0.8206,
+            "observed_fraction": 0.7222,
+            "n": 18
+          },
+          {
+            "mean_predicted": 0.9076,
+            "observed_fraction": 0.8333,
+            "n": 18
+          }
+        ],
+        "expected_calibration_error": 0.0611,
+        "calibration_slope": 0.7854,
+        "calibration_intercept": -0.2914,
+        "binning": "quantile"
+      },
+      "c_index": {
+        "value": 0.7388,
+        "ci95": [
+          0.6881,
+          0.7793
+        ],
+        "metric": "Harrell's C (time to simulated event)",
+        "n": 200
+      },
+      "excluded_censored_before_horizon": 22
+    }
+  },
+  "subgroups": {
+    "sex=F": {
+      "n": 107,
+      "n_events": 50,
+      "prevalence": 0.4673,
+      "auroc": {
+        "value": 0.7968,
+        "ci95": [
+          0.6986,
+          0.8767
+        ],
+        "metric": "AUROC"
+      },
+      "auprc": {
+        "value": 0.7973,
+        "ci95": [
+          0.675,
+          0.8892
+        ],
+        "metric": "AUPRC"
+      },
+      "brier": {
+        "value": 0.1781,
+        "ci95": [
+          0.1437,
+          0.2177
+        ],
+        "metric": "Brier"
+      },
+      "threshold": 0.5185,
+      "threshold_source": "Youden index on the validation split",
+      "sensitivity": {
+        "value": 0.62,
+        "ci95": [
+          0.4791,
+          0.7586
+        ],
+        "metric": "Sensitivity"
+      },
+      "specificity": {
+        "value": 0.8246,
+        "ci95": [
+          0.7167,
+          0.9138
+        ],
+        "metric": "Specificity"
+      },
+      "calibration": {
+        "bins": [
+          {
+            "mean_predicted": 0.1033,
+            "observed_fraction": 0.0,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.2059,
+            "observed_fraction": 0.2727,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.2617,
+            "observed_fraction": 0.4,
+            "n": 10
+          },
+          {
+            "mean_predicted": 0.3117,
+            "observed_fraction": 0.3636,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.3639,
+            "observed_fraction": 0.2,
+            "n": 10
+          },
+          {
+            "mean_predicted": 0.4518,
+            "observed_fraction": 0.5455,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.5496,
+            "observed_fraction": 0.3636,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.6896,
+            "observed_fraction": 0.8,
+            "n": 10
+          },
+          {
+            "mean_predicted": 0.8099,
+            "observed_fraction": 0.8182,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.9483,
+            "observed_fraction": 0.9091,
+            "n": 11
+          }
+        ],
+        "expected_calibration_error": 0.095,
+        "calibration_slope": 1.0228,
+        "calibration_intercept": -0.0127,
+        "binning": "quantile"
+      },
+      "c_index": {
+        "value": 0.7387,
+        "ci95": [
+          0.6768,
+          0.7926
+        ],
+        "metric": "Harrell's C (time to simulated event)",
+        "n": 117
+      },
+      "excluded_censored_before_horizon": 10
+    },
+    "sex=M": {
+      "n": 132,
+      "n_events": 75,
+      "prevalence": 0.5682,
+      "auroc": {
+        "value": 0.8007,
+        "ci95": [
+          0.7202,
+          0.8751
+        ],
+        "metric": "AUROC"
+      },
+      "auprc": {
+        "value": 0.835,
+        "ci95": [
+          0.7463,
+          0.91
+        ],
+        "metric": "AUPRC"
+      },
+      "brier": {
+        "value": 0.1911,
+        "ci95": [
+          0.1564,
+          0.2264
+        ],
+        "metric": "Brier"
+      },
+      "threshold": 0.5185,
+      "threshold_source": "Youden index on the validation split",
+      "sensitivity": {
+        "value": 0.6,
+        "ci95": [
+          0.4872,
+          0.7024
+        ],
+        "metric": "Sensitivity"
+      },
+      "specificity": {
+        "value": 0.8772,
+        "ci95": [
+          0.7777,
+          0.9584
+        ],
+        "metric": "Specificity"
+      },
+      "calibration": {
+        "bins": [
+          {
+            "mean_predicted": 0.1254,
+            "observed_fraction": 0.1429,
+            "n": 14
+          },
+          {
+            "mean_predicted": 0.212,
+            "observed_fraction": 0.1538,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.2789,
+            "observed_fraction": 0.4615,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.3334,
+            "observed_fraction": 0.3846,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.398,
+            "observed_fraction": 0.6923,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.4724,
+            "observed_fraction": 0.3846,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.5771,
+            "observed_fraction": 1.0,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.7048,
+            "observed_fraction": 0.6923,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.8212,
+            "observed_fraction": 0.8462,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.9447,
+            "observed_fraction": 0.9286,
+            "n": 14
+          }
+        ],
+        "expected_calibration_error": 0.1153,
+        "calibration_slope": 0.9647,
+        "calibration_intercept": 0.4281,
+        "binning": "quantile"
+      },
+      "c_index": {
+        "value": 0.7092,
+        "ci95": [
+          0.6639,
+          0.7555
+        ],
+        "metric": "Harrell's C (time to simulated event)",
+        "n": 139
+      },
+      "excluded_censored_before_horizon": 7
+    },
+    "site=site_A": {
+      "n": 130,
+      "n_events": 67,
+      "prevalence": 0.5154,
+      "auroc": {
+        "value": 0.8105,
+        "ci95": [
+          0.7308,
+          0.8755
+        ],
+        "metric": "AUROC"
+      },
+      "auprc": {
+        "value": 0.8348,
+        "ci95": [
+          0.7453,
+          0.9033
+        ],
+        "metric": "AUPRC"
+      },
+      "brier": {
+        "value": 0.1772,
+        "ci95": [
+          0.145,
+          0.2117
+        ],
+        "metric": "Brier"
+      },
+      "threshold": 0.5185,
+      "threshold_source": "Youden index on the validation split",
+      "sensitivity": {
+        "value": 0.6119,
+        "ci95": [
+          0.5,
+          0.7286
+        ],
+        "metric": "Sensitivity"
+      },
+      "specificity": {
+        "value": 0.873,
+        "ci95": [
+          0.7758,
+          0.9444
+        ],
+        "metric": "Specificity"
+      },
+      "calibration": {
+        "bins": [
+          {
+            "mean_predicted": 0.1041,
+            "observed_fraction": 0.0769,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.2065,
+            "observed_fraction": 0.0769,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.2694,
+            "observed_fraction": 0.4615,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.3232,
+            "observed_fraction": 0.3846,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.3806,
+            "observed_fraction": 0.6923,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.4659,
+            "observed_fraction": 0.2308,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.5552,
+            "observed_fraction": 0.6154,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.7088,
+            "observed_fraction": 0.7692,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.8575,
+            "observed_fraction": 0.8462,
+            "n": 13
+          },
+          {
+            "mean_predicted": 0.9663,
+            "observed_fraction": 1.0,
+            "n": 13
+          }
+        ],
+        "expected_calibration_error": 0.1123,
+        "calibration_slope": 1.0599,
+        "calibration_intercept": 0.1964,
+        "binning": "quantile"
+      },
+      "c_index": {
+        "value": 0.7325,
+        "ci95": [
+          0.6856,
+          0.7864
+        ],
+        "metric": "Harrell's C (time to simulated event)",
+        "n": 142
+      },
+      "excluded_censored_before_horizon": 12
+    },
+    "site=site_B": {
+      "n": 109,
+      "n_events": 58,
+      "prevalence": 0.5321,
+      "auroc": {
+        "value": 0.7813,
+        "ci95": [
+          0.6854,
+          0.8688
+        ],
+        "metric": "AUROC"
+      },
+      "auprc": {
+        "value": 0.7887,
+        "ci95": [
+          0.6665,
+          0.8931
+        ],
+        "metric": "AUPRC"
+      },
+      "brier": {
+        "value": 0.1949,
+        "ci95": [
+          0.1575,
+          0.2356
+        ],
+        "metric": "Brier"
+      },
+      "threshold": 0.5185,
+      "threshold_source": "Youden index on the validation split",
+      "sensitivity": {
+        "value": 0.6034,
+        "ci95": [
+          0.4667,
+          0.7308
+        ],
+        "metric": "Sensitivity"
+      },
+      "specificity": {
+        "value": 0.8235,
+        "ci95": [
+          0.7115,
+          0.9231
+        ],
+        "metric": "Specificity"
+      },
+      "calibration": {
+        "bins": [
+          {
+            "mean_predicted": 0.1255,
+            "observed_fraction": 0.0909,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.2014,
+            "observed_fraction": 0.3636,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.272,
+            "observed_fraction": 0.3636,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.3241,
+            "observed_fraction": 0.1818,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.3857,
+            "observed_fraction": 0.4,
+            "n": 10
+          },
+          {
+            "mean_predicted": 0.4623,
+            "observed_fraction": 0.7273,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.5736,
+            "observed_fraction": 0.8182,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.6914,
+            "observed_fraction": 0.7273,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.7885,
+            "observed_fraction": 0.8182,
+            "n": 11
+          },
+          {
+            "mean_predicted": 0.9198,
+            "observed_fraction": 0.8182,
+            "n": 11
+          }
+        ],
+        "expected_calibration_error": 0.1131,
+        "calibration_slope": 0.9067,
+        "calibration_intercept": 0.2773,
+        "binning": "quantile"
+      },
+      "c_index": {
+        "value": 0.7034,
+        "ci95": [
+          0.6377,
+          0.7629
+        ],
+        "metric": "Harrell's C (time to simulated event)",
+        "n": 114
+      },
+      "excluded_censored_before_horizon": 5
+    }
+  },
+  "feature_importance": [
+    {
+      "feature": "baseline_total_volume_cc",
+      "standardized_log_odds": 0.8043
+    },
+    {
+      "feature": "log_volume_ratio_per_100d",
+      "standardized_log_odds": 0.7754
+    },
+    {
+      "feature": "new_lesion_count",
+      "standardized_log_odds": 0.6749
+    },
+    {
+      "feature": "node_region_lesion_observed",
+      "standardized_log_odds": 0.3359
+    },
+    {
+      "feature": "missingindicator_age_years",
+      "standardized_log_odds": -0.1782
+    },
+    {
+      "feature": "missingindicator_primary_sphericity",
+      "standardized_log_odds": 0.1582
+    },
+    {
+      "feature": "age_years",
+      "standardized_log_odds": 0.1042
+    },
+    {
+      "feature": "primary_sphericity",
+      "standardized_log_odds": -0.0455
+    }
+  ],
+  "caveat": "Synthetic cohort with a simulated outcome. These numbers are not evidence of clinical performance.",
+  "created_utc": "2026-10-27T06:21:28+00:00"
+}

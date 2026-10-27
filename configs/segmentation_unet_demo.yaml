@@ -1,0 +1,20 @@
+# Demo 3-D U-Net trained on synthetic phantoms. Results are DEMO results.
+experiment: seg-unet-demo
+dataset:
+  manifest_id: synthetic-seg-v1
+  n_patients: 60            # patient-level split 70/15/15 -> 42 / 9 / 9 patients
+  timepoints_per_patient: 2
+  dataset_seed: 2026
+  split_seed: 42
+training:
+  seed: 1234
+  epochs: 40
+  batch_size: 2
+  patch_zyx: [48, 80, 80]
+  foreground_crop_probability: 0.7
+  learning_rate: 0.002
+  weight_decay: 0.00001
+  validate_every: 5
+  device: auto              # auto | cpu | mps | cuda
+inference:
+  mc_dropout_samples: 8
