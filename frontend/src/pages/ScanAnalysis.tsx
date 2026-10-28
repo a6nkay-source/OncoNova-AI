@@ -29,6 +29,7 @@ import {
 import { invalidateVolumes, useAsync } from "../state/hooks";
 import { useApp } from "../state/AppState";
 import { CaseViewer, type OverlaySpec } from "../viewer/CaseViewer";
+import { LESION_COLORS } from "../viewer/volume";
 
 const CLASS_LABEL: Record<string, string> = {
   primary_tumor: "Primary lesion",
@@ -196,13 +197,21 @@ export function ScanAnalysisPage() {
   const overlays: OverlaySpec[] = [
     {
       id: "drawing",
+      name: "AI drawing",
       url: seg ? api.mapUrl(caseId, tpId, "prediction", { model_id: modelId }) : null,
       type: "label",
-      opacity: 0.55,
+      opacity: 0.85,
+      style: "both",
+      legend: [
+        { name: "Primary lesion", values: [1], color: LESION_COLORS[1] },
+        { name: "Node-region", values: [2], color: LESION_COLORS[2] },
+        { name: "Other lesion", values: [3], color: LESION_COLORS[3] },
+      ],
       visible: !!seg && mode === "drawing",
     },
     {
       id: "uncertainty",
+      name: "Where the AI is unsure",
       url: seg && mode === "uncertainty" ? api.mapUrl(caseId, tpId, "uncertainty", { model_id: modelId }) : null,
       type: "map",
       lut: "uncertainty",
@@ -212,11 +221,12 @@ export function ScanAnalysisPage() {
     },
     {
       id: "truth",
+      name: "True outline",
       url: current.has_reference ? api.mapUrl(caseId, tpId, "reference") : null,
       type: "label",
-      opacity: 0.6,
-      outline: true,
-      colors: { 1: [255, 255, 255], 2: [255, 255, 255], 3: [255, 255, 255] },
+      opacity: 0.9,
+      style: "outline",
+      legend: [{ name: "Synthetic ground truth", values: [1, 2, 3], color: [255, 255, 255] }],
       visible: showTruth && current.has_reference,
     },
   ];
@@ -280,12 +290,6 @@ export function ScanAnalysisPage() {
               </div>
             }
           />
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-ink-400">
-            <Legend color="#2fd0b8" label="Primary lesion (AI)" />
-            <Legend color="#f4b740" label="Node-region (AI)" />
-            <Legend color="#e58cff" label="Other lesion (AI)" />
-            {current.has_reference && <Legend color="#ffffff" label="True outline (synthetic ground truth)" outline />}
-          </div>
         </Panel>
 
         <div className="flex flex-col gap-4">
@@ -296,7 +300,7 @@ export function ScanAnalysisPage() {
             models={models}
             modelId={modelId}
             setModelId={setModelId}
-            onFocus={setFocus}
+            onFocus={(zyx) => setFocus([zyx[0], zyx[1], zyx[2]])}
           />
           <ChangeCard step={pipe.change} longi={pipe.longi} />
           <PredictionCard step={pipe.predict} risk={pipe.risk} />
@@ -439,15 +443,6 @@ function ImportScan() {
         </div>
       )}
     </div>
-  );
-}
-
-function Legend({ color, label, outline }: { color: string; label: string; outline?: boolean }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <span className="h-2.5 w-2.5 rounded-sm" style={outline ? { border: `1.5px solid ${color}` } : { background: color }} />
-      {label}
-    </span>
   );
 }
 

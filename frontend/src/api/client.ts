@@ -92,6 +92,7 @@ export interface VolumeData {
   data: Int16Array | Uint8Array;
   shape: [number, number, number]; // z, y, x
   spacing: [number, number, number]; // x, y, z (mm)
+  origin?: [number, number, number]; // x, y, z (LPS mm)
   scale: number;
   offset: number;
   label?: string | null;
@@ -111,6 +112,8 @@ export async function fetchVolume(path: string, signal?: AbortSignal): Promise<V
   const buf = await res.arrayBuffer();
   const shape = res.headers.get("X-Shape")!.split(",").map(Number) as [number, number, number];
   const spacing = res.headers.get("X-Spacing")!.split(",").map(Number) as [number, number, number];
+  const originHeader = res.headers.get("X-Origin");
+  const origin = originHeader ? (originHeader.split(",").map(Number) as [number, number, number]) : undefined;
   const dtype = res.headers.get("X-Dtype");
   const data = dtype === "int16" ? new Int16Array(buf) : new Uint8Array(buf);
   if (data.length !== shape[0] * shape[1] * shape[2]) {
@@ -120,6 +123,7 @@ export async function fetchVolume(path: string, signal?: AbortSignal): Promise<V
     data,
     shape,
     spacing,
+    origin,
     scale: Number(res.headers.get("X-Scale") ?? 1),
     offset: Number(res.headers.get("X-Offset") ?? 0),
     label: res.headers.get("X-Data-Label"),

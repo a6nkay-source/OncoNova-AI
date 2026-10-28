@@ -51,6 +51,22 @@ export function voxelValue(v: VolumeData, i: number): number {
   return v.data[i] * v.scale + v.offset;
 }
 
+/** Raw label values of one slice, row-major in display order (width x height). */
+export function sliceLabels(v: VolumeData, plane: Plane, k: number): Uint8Array {
+  const info = planeInfo(v.shape, v.spacing, plane);
+  const out = new Uint8Array(info.width * info.height);
+  for (let row = 0; row < info.height; row++)
+    for (let col = 0; col < info.width; col++) out[row * info.width + col] = v.data[voxelIndex(v.shape, plane, k, col, row)];
+  return out;
+}
+
+/** Physical position of slice ``k`` along the plane normal (LPS mm), or null without an origin. */
+export function sliceOffsetMm(v: VolumeData, plane: Plane, k: number): number | null {
+  if (!v.origin) return null;
+  const axis = plane === "axial" ? 2 : plane === "coronal" ? 1 : 0;
+  return v.origin[axis] + k * v.spacing[axis];
+}
+
 // ----- colour maps -------------------------------------------------------------
 
 export type RGB = [number, number, number];

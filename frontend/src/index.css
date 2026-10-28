@@ -81,6 +81,22 @@ input[type="range"]::-moz-range-thumb {
   @apply h-3.5 w-3.5 rounded-full border-2 border-ink-950 bg-accent;
 }
 
+/* Colour pickers used as legend swatches in the viewer. */
+input[type="color"].swatch {
+  @apply h-3.5 w-3.5 cursor-pointer appearance-none rounded-sm border-0 bg-transparent p-0;
+}
+input[type="color"].swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input[type="color"].swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+input[type="color"].swatch::-moz-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
 .sim-stripes {
   background-image: repeating-linear-gradient(
     -45deg,
