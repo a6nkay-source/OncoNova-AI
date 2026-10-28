@@ -1406,6 +1406,67 @@
         }
       }
     },
+    "/api/cases/{case_id}/dose/beams": {
+      "get": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Get Dose Beams",
+        "description": "Per-beam shares of the SIMULATED illustration on the axial slice through the target (n_beams, y, x).",
+        "operationId": "get_dose_beams_api_cases__case_id__dose_beams_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "scenario_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^S[0-9]{1,2}$",
+              "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "target_source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "reference",
+              "title": "Target Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases/{case_id}/dose/import": {
       "post": {
         "tags": [

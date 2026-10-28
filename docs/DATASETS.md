@@ -1,6 +1,6 @@
 # Dataset setup guide
 
-Checked 2026-10-26. Dataset papers were found through PubMed and each one was followed to its official archive: The Cancer Imaging Archive (TCIA) collection pages, the Medical Segmentation Decathlon release on the AWS Open Data registry, Figshare (via the paper) and the NCI Imaging Data Commons tooling. File sizes come from the archive pages or from HTTP `Content-Length` headers (HEAD requests only; nothing was downloaded). Anything that could not be confirmed is marked **not stated**. Licences and access terms change, so check them again before downloading. The same catalogue drives the Dataset Management page (`configs/datasets.yaml`).
+Checked 2026-10-26. Dataset papers were found through PubMed and each one was followed to its official archive: The Cancer Imaging Archive (TCIA) collection pages, the Medical Segmentation Decathlon release on the AWS Open Data registry, Figshare (via the paper) and the NCI Imaging Data Commons tooling. File sizes come from the archive pages or from HTTP `Content-Length` headers (HEAD requests only; nothing was downloaded). Anything that could not be confirmed is marked **not stated**. Licences and access terms change, so check them again before downloading. The same catalogue drives the Datasets tab of the Models & Data page (`configs/datasets.yaml`).
 
 > Use only data you are authorised to use, follow each dataset's usage policy and citation requirements, and never place downloaded images in source control (`data/` is git-ignored).
 

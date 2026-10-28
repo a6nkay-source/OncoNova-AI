@@ -68,6 +68,11 @@ def test_full_pipeline(client):
     assert dose["kind"] == "simulated" and dose["not_a_prescription"] and "NON-CLINICAL" in dose["label"]
     m = client.get(f"/api/cases/DEMO-001/timepoints/T0/maps/dose?key={dose['dose_map']}")
     assert m.status_code == 200 and m.headers["x-data-label"] == "SIMULATED - NON-CLINICAL"
+    beams = client.get("/api/cases/DEMO-001/dose/beams?scenario_id=S1&target_source=reference")
+    assert beams.status_code == 200 and beams.headers["x-data-label"] == "SIMULATED - NON-CLINICAL"
+    assert beams.headers["x-shape"].startswith("3,") and beams.headers["x-beam-angles"] == "0.0,120.0,240.0"
+    assert int(beams.headers["x-slice-index"]) == dose["beams"]["slice_index"]
+    assert client.get("/api/cases/DEMO-001/dose/beams?scenario_id=S3&target_source=reference").status_code == 404
     summary = client.get("/api/cases/DEMO-001/summary").json()
     assert set(summary["sections"]) == {
         "A_imaging_observations", "B_segmentation_results", "C_changes_between_timepoints",

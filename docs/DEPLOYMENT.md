@@ -49,7 +49,7 @@ keys:
     role: researcher   # viewer | researcher | admin
 ```
 
-Give each person their raw key through a secure channel. Users paste it under Settings → Access; the browser sends it as `X-API-Key`.
+Give each person their raw key through a secure channel. Users paste it under Models & Data → Safety and access; the browser sends it as `X-API-Key`.
 
 ## Docker (written, not yet tested in this repository)
 

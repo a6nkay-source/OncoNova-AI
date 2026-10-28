@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../api/client";
-import type { BinaryReport, EvaluationReport, SummaryStat } from "../api/types";
-import { DivergingBars, ForestPlot, LineChart, StripPlot } from "../components/charts";
-import { DemoBadge, ErrorState, EvidenceBadge, Note, Panel, Segmented, Spinner, Stat, fmt, fmtCI } from "../components/ui";
-import { useAsync } from "../state/hooks";
+import { api } from "../../api/client";
+import type { BinaryReport, EvaluationReport, SummaryStat } from "../../api/types";
+import { DivergingBars, ForestPlot, LineChart, StripPlot } from "../../components/charts";
+import { DemoBadge, ErrorState, EvidenceBadge, Note, Panel, Segmented, Spinner, Stat, fmt, fmtCI } from "../../components/ui";
+import { useAsync } from "../../state/hooks";
 
 const SEG_TARGETS: Record<string, string> = {
   any_lesion: "Any lesion",
@@ -12,7 +12,7 @@ const SEG_TARGETS: Record<string, string> = {
   other_lesion: "Other lesion",
 };
 
-export function EvaluationPage() {
+export function EvaluationSection() {
   const list = useAsync(() => api.evaluations(), []);
   const reports = list.data?.reports ?? [];
   const latest = useMemo(() => {

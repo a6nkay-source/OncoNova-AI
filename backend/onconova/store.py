@@ -158,6 +158,18 @@ class CaseStore:
         path = self.results_dir(case_id) / f"{name}.json"
         return json.loads(path.read_text()) if path.exists() else None
 
+    def save_array(self, case_id: str, name: str, array: np.ndarray) -> None:
+        """Small derived arrays that are not on the image grid (e.g. per-beam dose slices)."""
+        if not LABEL_NAME_PATTERN.match(name):
+            raise OncoNovaError("invalid_result_name", "Invalid result name.", status_code=400)
+        np.save(self.results_dir(case_id) / f"{name}.npy", array, allow_pickle=False)
+
+    def array(self, case_id: str, name: str) -> np.ndarray | None:
+        if not LABEL_NAME_PATTERN.match(name):
+            return None
+        path = self.results_dir(case_id) / f"{name}.npy"
+        return np.load(path, allow_pickle=False) if path.exists() else None
+
     def results(self, case_id: str, prefix: str = "") -> dict[str, dict[str, Any]]:
         out = {}
         for path in sorted(self.results_dir(case_id).glob(f"{prefix}*.json")):

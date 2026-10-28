@@ -59,8 +59,22 @@ def expand(mask: np.ndarray, margin_mm: float, spacing_zyx: tuple[float, float, 
     return dist <= margin_mm
 
 
-def illustrate(volume: Volume, target: np.ndarray, body: np.ndarray, scenario: Scenario) -> dict:
-    """Return the relative dose grid (1.0 = target median) and the expanded target."""
+SMOOTH_SIGMA_PX = 0.8
+
+
+def beam_angles(scenario: Scenario) -> np.ndarray:
+    """Gantry angles in degrees, IEC 61217 convention for a head-first supine patient on an LPS grid:
+    0 = beam from anterior, 90 = beam from the patient's left."""
+    return np.linspace(0, 360, scenario.n_beams, endpoint=False)
+
+
+def illustrate(volume: Volume, target: np.ndarray, body: np.ndarray, scenario: Scenario,
+               beam_slice: int | None = None) -> dict:
+    """Return the relative dose grid (1.0 = target median) and the expanded target.
+
+    With ``beam_slice`` (an axial index), also return each beam's contribution on that slice
+    (``beam_slices``, shape (n_beams, y, x)); they sum to the dose on that slice.
+    """
     if not target.any():
         raise ValueError("target mask is empty")
     sx, sy = volume.spacing[0], volume.spacing[1]
@@ -70,10 +84,12 @@ def illustrate(volume: Volume, target: np.ndarray, body: np.ndarray, scenario: S
     ptv = expand(target, scenario.margin_mm, volume.spacing_zyx)
     dose = np.zeros(volume.shape, dtype=np.float32)
     penumbra_px = PENUMBRA_SIGMA_MM / sx
-    for angle in np.linspace(0, 360, scenario.n_beams, endpoint=False):
-        # Rotate so the beam travels along +y (rows), cut the aperture, rotate back.
-        rot_ptv = ndimage.rotate(ptv.astype(np.float32), -angle, axes=(1, 2), reshape=False, order=1) > 0.5
-        rot_body = ndimage.rotate(body.astype(np.float32), -angle, axes=(1, 2), reshape=False, order=1) > 0.5
+    slices = []
+    angles = beam_angles(scenario)
+    for angle in angles:
+        # Rotate so the beam travels along +y (rows, anterior to posterior), cut the aperture, rotate back.
+        rot_ptv = ndimage.rotate(ptv.astype(np.float32), angle, axes=(1, 2), reshape=False, order=1) > 0.5
+        rot_body = ndimage.rotate(body.astype(np.float32), angle, axes=(1, 2), reshape=False, order=1) > 0.5
         aperture = rot_ptv.any(axis=1)  # (z, x) beam's-eye view per slice
         # Open the aperture by about one penumbra width so the target edge is not underdosed.
         aperture = ndimage.binary_dilation(aperture, iterations=max(1, int(round(penumbra_px)))).astype(np.float32)
@@ -82,8 +98,17 @@ def illustrate(volume: Volume, target: np.ndarray, body: np.ndarray, scenario: S
         beam = aperture[:, None, :] * np.exp(-ATTENUATION_PER_MM * depth) * rot_body
         # Equal-weight beams at the target: each beam delivers the same mean to the target.
         beam /= max(float(beam[rot_ptv].mean()), 1e-6)
-        dose += ndimage.rotate(beam.astype(np.float32), angle, axes=(1, 2), reshape=False, order=1)
-    dose = ndimage.gaussian_filter(dose, sigma=0.8) * body
+        back = ndimage.rotate(beam.astype(np.float32), -angle, axes=(1, 2), reshape=False, order=1)
+        dose += back
+        if beam_slice is not None:
+            # Smoothing is linear, so smoothing a slab around the slice gives this beam's exact share there.
+            lo, hi = max(beam_slice - 4, 0), min(beam_slice + 5, volume.shape[0])
+            slices.append(ndimage.gaussian_filter(back[lo:hi], sigma=SMOOTH_SIGMA_PX)[beam_slice - lo])
+    dose = ndimage.gaussian_filter(dose, sigma=SMOOTH_SIGMA_PX) * body
     median = float(np.median(dose[ptv])) or 1.0
     dose = (dose / median).astype(np.float32)
-    return {"dose": dose, "ptv": ptv, "warnings": warnings, "units": "relative (1.0 = median in illustrative target)"}
+    out = {"dose": dose, "ptv": ptv, "warnings": warnings, "units": "relative (1.0 = median in illustrative target)",
+           "angles_deg": angles}
+    if beam_slice is not None:
+        out["beam_slices"] = (np.stack(slices) * body[beam_slice] / median).astype(np.float32)
+    return out

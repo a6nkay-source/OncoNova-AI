@@ -11,7 +11,8 @@ from fastapi import Response
 
 from onconova.imaging.volume import Volume
 
-EXPOSED_HEADERS = ["X-Shape", "X-Spacing", "X-Origin", "X-Direction", "X-Dtype", "X-Scale", "X-Offset", "X-Data-Label"]
+EXPOSED_HEADERS = ["X-Shape", "X-Spacing", "X-Origin", "X-Direction", "X-Dtype", "X-Scale", "X-Offset", "X-Data-Label",
+                   "X-Beam-Angles", "X-Slice-Index"]
 
 
 def volume_response(volume: Volume, array: np.ndarray, *, kind: str, label: str | None = None,

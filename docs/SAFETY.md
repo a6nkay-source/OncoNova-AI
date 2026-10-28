@@ -16,7 +16,7 @@ Diagnosis, prognosis, staging, treatment selection, radiation prescription or pl
 | No prescriptions | The dose module works only in relative units (1.0 = median in an illustrative target). There is no input or output for a prescribed dose, fractionation or monitor units. Every dose result has `not_a_prescription: true` and the SIMULATED · NON-CLINICAL label. |
 | No unsupported predictions | Missing required inputs return `{"status": "unavailable", …}` with the reason and what is missing. Tests check that no probability is returned in that case. |
 | No silent model substitution | Model cards carry the checkpoint SHA-256. A mismatched checkpoint makes the model unavailable. |
-| No invented performance | The Model Evaluation page and `docs/EVALUATION_REPORT.md` read stored evaluation artifacts only. With none stored, they say so. |
+| No invented performance | The Models & Data page and `docs/EVALUATION_REPORT.md` read stored evaluation artifacts only. With none stored, they say so. |
 | No outbound transmission of data | The package imports no network clients (tested). The frontend bundles its fonts and calls only its own API. |
 | No metastasis claims | Longitudinal analysis reports new segmented regions as *requires expert review*, with text stating that a new region is not by itself evidence of metastasis. The progression model has no spread-destination labels and says so. |
 
@@ -24,7 +24,7 @@ Diagnosis, prognosis, staging, treatment selection, radiation prescription or pl
 
 - **DEMO DATA**: every synthetic case, in the top bar, case records, binary responses (`X-Data-Label`) and exports.
 - **DEMO MODEL**: every model trained or tuned on phantoms.
-- **SIMULATED · NON-CLINICAL**: the LINAC page banner, each dose result and the dose map header.
+- **SIMULATED · NON-CLINICAL**: the LINAC Simulator banner, the "Simulation · dummy patient" label in the 3-D room, each dose result and the dose-map and per-beam replay headers. The simulator only replays a precomputed illustration in the browser; the gantry, beam and patient exist nowhere else.
 - **Evidence badges**: measured, measured from AI mask, AI prediction, uncertain, expert review, simulated, unavailable.
 - A permanent banner: research prototype, not for clinical use, no connection to medical equipment.
 

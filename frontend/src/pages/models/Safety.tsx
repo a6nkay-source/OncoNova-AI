@@ -1,11 +1,11 @@
 import { KeyRound, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { api, getApiKey, setApiKey } from "../api/client";
-import { ErrorState, Note, Panel, Spinner } from "../components/ui";
-import { useAsync } from "../state/hooks";
-import { useApp } from "../state/AppState";
+import { api, getApiKey, setApiKey } from "../../api/client";
+import { ErrorState, Note, Panel, Spinner } from "../../components/ui";
+import { useAsync } from "../../state/hooks";
+import { useApp } from "../../state/AppState";
 
-export function SettingsPage() {
+export function SafetySection() {
   const { system, refresh } = useApp();
   const [key, setKey] = useState(getApiKey());
   const [auditOpen, setAuditOpen] = useState(false);

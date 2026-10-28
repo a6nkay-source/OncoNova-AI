@@ -212,15 +212,20 @@ def run_dose(store: CaseStore, case_id: str, scenario_id: str, target_source: st
     else:
         body = structures > 0
         oars = {name: structures == k for k, name in STRUCTURE_NAMES.items()}
-    out = illustrate(volume, lesions == 1, body, scenario)
+    beam_slice = int(round(float(np.argwhere(lesions == 1)[:, 0].mean())))
+    out = illustrate(volume, lesions == 1, body, scenario, beam_slice=beam_slice)
     key = f"dose_{scenario_id.lower()}_{source_key(target_source)}"
     store.save_map(case_id, tp_id, key, out["dose"])
+    store.save_array(case_id, f"{key}_beams", out["beam_slices"])
     structs = {"illustrative_target": out["ptv"], **{k: v & ~out["ptv"] for k, v in oars.items()}, "body": body}
     report = dvh_mod.dvh_report(out["dose"], structs, "illustrative_target", volume.voxel_volume_mm3 / 1000)
     result = {
         "status": "ok", "kind": EvidenceKind.SIMULATED.value, "label": SIMULATION_LABEL,
         "case_id": case_id, "tp_id": tp_id, "scenario": scenario.to_dict(), "target_source": target_source,
         "dose_units": out["units"], "dose_map": key, "dvh": report,
+        "beams": {"angles_deg": [round(float(a), 3) for a in out["angles_deg"]], "slice_index": beam_slice,
+                  "angle_convention": "IEC 61217 gantry angle, head-first supine: 0 = anterior, 90 = patient left",
+                  "note": "Each beam's share of the illustration on the axial slice through the target, for replay."},
         "warnings": out["warnings"] + warnings,
         "not_a_prescription": True,
         "provenance": provenance(case=case, engine="onconova.dose.synthetic (geometric illustration)"),

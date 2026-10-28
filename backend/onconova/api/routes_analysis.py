@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, Response
 from fastapi.concurrency import run_in_threadpool
 
 from onconova import services
+from onconova.api.binary import volume_response
 from onconova.api.deps import audit, get_settings, get_store, require
 from onconova.api.schemas import ComparisonRequest, DoseRequest, SegmentationRequest, SourceRequest
 from onconova.api.streaming import body_to_tempfile
@@ -13,7 +14,7 @@ from onconova.config import Settings
 from onconova.dose import dvh as dvh_mod
 from onconova.dose.rtdose import import_dose
 from onconova.dose.synthetic import SCENARIOS
-from onconova.errors import UploadRejected
+from onconova.errors import NotFoundError, UploadRejected
 from onconova.provenance import provenance
 from onconova.safety import EvidenceKind, unavailable
 from onconova.security import Principal
@@ -115,6 +116,21 @@ def get_dose(case_id: str, scenario_id: str = Query(..., pattern=r"^S[0-9]{1,2}$
     """Stored dose illustration for a scenario, or an unavailable state."""
     return store.result(case_id, f"dose_{scenario_id.lower()}_{services.source_key(target_source)}") or unavailable(
         "This scenario has not been computed yet.", how_to_fix="Run the simulation.")
+
+
+@router.get("/cases/{case_id}/dose/beams")
+def get_dose_beams(case_id: str, scenario_id: str = Query(..., pattern=r"^S[0-9]{1,2}$"), target_source: str = "reference",
+                   store: CaseStore = Depends(get_store), _: Principal = Depends(require("viewer"))) -> Response:
+    """Per-beam shares of the SIMULATED illustration on the axial slice through the target (n_beams, y, x)."""
+    key = f"dose_{scenario_id.lower()}_{services.source_key(target_source)}"
+    result, beams = store.result(case_id, key), store.array(case_id, f"{key}_beams")
+    if result is None or beams is None or "beams" not in result:
+        raise NotFoundError("map_not_found", "No per-beam replay for this scenario; run the simulation first.")
+    response = volume_response(store.image(case_id, result["tp_id"]), beams, kind="map",
+                               vmax=float(beams.max()) or 1.0, label="SIMULATED - NON-CLINICAL")
+    response.headers["X-Beam-Angles"] = ",".join(str(a) for a in result["beams"]["angles_deg"])
+    response.headers["X-Slice-Index"] = str(result["beams"]["slice_index"])
+    return response
 
 
 @router.post("/cases/{case_id}/dose/import")

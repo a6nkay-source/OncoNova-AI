@@ -247,6 +247,9 @@ export interface DoseResult {
   dose_map: string;
   dvh: DVH;
   warnings: string[];
+  /** Per-beam replay metadata (absent in results computed before replay support). */
+  beams?: { angles_deg: number[]; slice_index: number; angle_convention: string; note: string };
+  saved_utc?: string;
 }
 
 export interface ResearchSummary {

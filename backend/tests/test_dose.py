@@ -8,7 +8,7 @@ from pydicom.uid import ExplicitVRLittleEndian, RTDoseStorage, generate_uid
 
 from onconova.dose.dvh import cumulative_dvh, dose_at_volume, dvh_report, volume_at_dose
 from onconova.dose.rtdose import import_dose
-from onconova.dose.synthetic import SCENARIOS, illustrate
+from onconova.dose.synthetic import SCENARIOS, Scenario, illustrate
 from onconova.errors import ImagingError
 from onconova.imaging.volume import Volume
 
@@ -55,6 +55,32 @@ def test_more_beams_spread_more_low_dose(phantom_case):
     body = structures.array > 0
     v5 = {s: volume_at_dose(illustrate(image, lesions.array == 1, body, SCENARIOS[s])["dose"], body, 0.05) for s in ("S1", "S3")}
     assert v5["S3"] > v5["S1"]
+
+
+def test_beam_slices_sum_to_the_dose_slice(phantom_case):
+    """The live replay shows each beam's share; together they must equal the illustration."""
+    _, renders = phantom_case
+    image, lesions, structures = renders[0]
+    target = lesions.array == 1
+    z = int(round(np.argwhere(target)[:, 0].mean()))
+    out = illustrate(image, target, structures.array > 0, SCENARIOS["S2"], beam_slice=z)
+    assert out["beam_slices"].shape == (7, *image.shape[1:])
+    assert np.allclose(out["beam_slices"].sum(axis=0), out["dose"][z], atol=1e-4)
+
+
+def test_beam_angles_follow_iec_convention():
+    """Gantry 90 deg (IEC 61217, head-first supine) enters from the patient's left, which is +x in LPS."""
+    yy, xx = np.mgrid[:100, :100]
+    body = np.repeat((((yy - 50) / 40) ** 2 + ((xx - 50) / 45) ** 2 <= 1)[None], 20, 0)
+    target = np.zeros_like(body)
+    target[8:12, 45:55, 45:55] = True
+    vol = Volume(array=np.where(body, 0.0, -1000.0).astype(np.float32), spacing=(2.0, 2.0, 2.0), origin=(0.0, 0.0, 0.0),
+                 direction=tuple(np.eye(3).ravel()), modality="CT")
+    out = illustrate(vol, target, body, Scenario("T", "four beams", 4, 0.0, ""), beam_slice=10)
+    assert list(out["angles_deg"]) == [0, 90, 180, 270]
+    at0, at90 = out["beam_slices"][0], out["beam_slices"][1]
+    assert at0[10:40, 45:55].mean() > at0[60:90, 45:55].mean()  # 0: anterior (low y) entry is hotter
+    assert at90[45:55, 60:90].mean() > at90[45:55, 10:40].mean()  # 90: patient-left (high x) entry is hotter
 
 
 def _rtdose(path, origin, spacing, shape, value=2.0, modality="RTDOSE"):

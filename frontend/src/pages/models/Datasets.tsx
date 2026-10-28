@@ -1,12 +1,12 @@
 import { ExternalLink, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { api } from "../api/client";
-import type { DatasetEntry } from "../api/types";
-import { DemoBadge, ErrorState, Note, Panel, Spinner, cx } from "../components/ui";
-import { useAsync } from "../state/hooks";
-import { useApp } from "../state/AppState";
+import { api } from "../../api/client";
+import type { DatasetEntry } from "../../api/types";
+import { DemoBadge, ErrorState, Note, Panel, Spinner, cx } from "../../components/ui";
+import { useAsync } from "../../state/hooks";
+import { useApp } from "../../state/AppState";
 
-export function DatasetsPage() {
+export function DatasetsSection() {
   const ds = useAsync(() => api.datasets(), []);
   const { cases, refresh } = useApp();
   const [error, setError] = useState<unknown>(null);

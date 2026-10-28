@@ -49,10 +49,14 @@
 
 ## Frontend
 
+Three pages: `pages/ScanAnalysis.tsx` (runs segmentation → longitudinal → progression automatically for the selected case and model, reusing stored results), `pages/LinacSimulator.tsx` and `pages/ModelsData.tsx` (evaluation, datasets and safety sections under `pages/models/`).
+
 - `viewer/SliceView.tsx` renders one plane into an offscreen canvas at native resolution (window/level, label fills or outlines, LUT maps), then scales it to physical aspect ratio with a crosshair. Display is radiological. Wheel scrolls slices. A brush paints annotations on the axial plane.
 - `viewer/CaseViewer.tsx` loads the image and overlays (shared request cache) and lays out the planes.
 - `components/Volume3D.tsx` builds three.js meshes from server-side marching cubes, in LPS, viewed from anterior.
 - `components/charts.tsx` provides dependency-free SVG line, interval, forest, strip and diverging-bar charts.
+- `sim/treatment.ts` is the LINAC replay clock: a pure, unit-tested state machine that moves a virtual gantry through the illustration's beam angles (IEC 61217, head-first supine), breathes the dummy patient (cos⁴ waveform, 8 mm superior-inferior target motion) and holds the beam outside an exhale gating window. It only weights the per-beam slices the API already computed (`GET /api/cases/{id}/dose/beams`); it models no physics and has no output other than the screen.
+- `components/TreatmentRoom.tsx` draws the room in the case's LPS frame: the anatomy meshes from the API inside a stylised dummy, a couch, room lasers and a C-arm gantry rotating about the isocentre (target centre). `components/SimPanels.tsx` holds the breathing monitor and the dose slice that builds up beam by beam.
 
 ## Why these choices
 

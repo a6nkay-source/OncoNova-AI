@@ -1,41 +1,19 @@
-import {
-  Activity,
-  BarChart3,
-  Database,
-  LayoutDashboard,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Radiation,
-  ScanLine,
-  Settings as SettingsIcon,
-  ShieldAlert,
-  Target,
-} from "lucide-react";
+import { BarChart3, PanelLeftClose, PanelLeftOpen, Radiation, ScanLine, ShieldAlert } from "lucide-react";
 import { useEffect, useState, type ComponentType } from "react";
 import { DemoBadge, ErrorState, cx } from "./components/ui";
-import { DatasetsPage } from "./pages/Datasets";
-import { EvaluationPage } from "./pages/Evaluation";
-import { ImagingPage } from "./pages/Imaging";
-import { LinacPage } from "./pages/Linac";
-import { OverviewPage } from "./pages/Overview";
-import { ProgressionPage } from "./pages/Progression";
-import { SegmentationPage } from "./pages/Segmentation";
-import { SettingsPage } from "./pages/Settings";
+import { LinacSimulatorPage } from "./pages/LinacSimulator";
+import { ModelsDataPage } from "./pages/ModelsData";
+import { ScanAnalysisPage } from "./pages/ScanAnalysis";
 import { useApp } from "./state/AppState";
 
-const NAV: { id: string; label: string; icon: ComponentType<{ className?: string }>; page: ComponentType }[] = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard, page: OverviewPage },
-  { id: "imaging", label: "Medical Imaging", icon: ScanLine, page: ImagingPage },
-  { id: "segmentation", label: "Tumor Segmentation", icon: Target, page: SegmentationPage },
-  { id: "progression", label: "Progression Analysis", icon: Activity, page: ProgressionPage },
-  { id: "linac", label: "LINAC Research Simulator", icon: Radiation, page: LinacPage },
-  { id: "evaluation", label: "Model Evaluation", icon: BarChart3, page: EvaluationPage },
-  { id: "datasets", label: "Dataset Management", icon: Database, page: DatasetsPage },
-  { id: "settings", label: "Settings", icon: SettingsIcon, page: SettingsPage },
+const NAV: { id: string; label: string; hint: string; icon: ComponentType<{ className?: string }>; page: ComponentType }[] = [
+  { id: "scan", label: "CT Scan Analysis", hint: "AI drawing, change and prediction", icon: ScanLine, page: ScanAnalysisPage },
+  { id: "linac", label: "LINAC Simulator", hint: "Dummy patient, simulated beams", icon: Radiation, page: LinacSimulatorPage },
+  { id: "models", label: "Models & Data", hint: "Performance, datasets, safety", icon: BarChart3, page: ModelsDataPage },
 ];
 
 function useHashRoute(): [string, (id: string) => void] {
-  const read = () => window.location.hash.replace(/^#\/?/, "") || "overview";
+  const read = () => window.location.hash.replace(/^#\/?/, "") || "scan";
   const [route, setRoute] = useState(read);
   useEffect(() => {
     const on = () => setRoute(read());
@@ -75,13 +53,14 @@ function Logo({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-function TopBar() {
-  const { cases, caseId, setCase, current, tpId, setTp, models, modelId, setModelId, system } = useApp();
+function TopBar({ title }: { title: string }) {
+  const { cases, caseId, setCase, current, system } = useApp();
   return (
     <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-ink-800 bg-ink-925/90 px-5 py-2.5 backdrop-blur">
-      <label className="flex items-center gap-2">
-        <span className="label">Case</span>
-        <select className="input max-w-[320px] py-1" value={caseId ?? ""} onChange={(e) => setCase(e.target.value)} aria-label="Case">
+      <h1 className="text-[15px] font-semibold tracking-tight text-ink-100">{title}</h1>
+      <label className="ml-2 flex items-center gap-2">
+        <span className="label">Patient case</span>
+        <select className="input max-w-[340px] py-1" value={caseId ?? ""} onChange={(e) => setCase(e.target.value)} aria-label="Case">
           {cases.map((c) => (
             <option key={c.case_id} value={c.case_id}>
               {c.case_id} · {c.title}
@@ -89,53 +68,12 @@ function TopBar() {
           ))}
         </select>
       </label>
-      {current && (
-        <div className="flex items-center gap-1" role="tablist" aria-label="Timepoint">
-          {current.timepoints.map((t) => (
-            <button
-              key={t.tp_id}
-              role="tab"
-              aria-selected={t.tp_id === tpId}
-              onClick={() => setTp(t.tp_id)}
-              className={cx(
-                "rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors",
-                t.tp_id === tpId ? "bg-accent/15 text-accent" : "text-ink-400 hover:bg-ink-800 hover:text-ink-200",
-              )}
-            >
-              {t.tp_id} <span className="text-ink-500">· day {t.days_from_baseline}</span>
-            </button>
-          ))}
-        </div>
+      {current && <DemoBadge label={current.demo ? "DEMO DATA" : current.label} />}
+      {system && (
+        <span className="mono ml-auto text-ink-500" title={`Auth mode: ${system.auth_mode}`}>
+          {system.principal.user} · {system.principal.role}
+        </span>
       )}
-      {current?.demo && <DemoBadge />}
-      {current && !current.demo && <DemoBadge label={current.label} />}
-      <div className="ml-auto flex items-center gap-3">
-        <label className="flex items-center gap-2">
-          <span className="label">Model</span>
-          <select className="input py-1" value={modelId} onChange={(e) => setModelId(e.target.value)} aria-label="Segmentation model">
-            {models.map((m) => (
-              <option key={m.id} value={m.id} disabled={m.status !== "available"}>
-                {m.id}
-                {m.status !== "available" ? " (unavailable)" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="flex items-center gap-1.5" title="Model status">
-          {models.map((m) => (
-            <span
-              key={m.id}
-              title={`${m.id}: ${m.status}${m.unavailable_reason ? ` - ${m.unavailable_reason}` : ""}`}
-              className={cx("h-2 w-2 rounded-full", m.status === "available" ? "bg-teal shadow-[0_0_8px_#2fd0b8]" : "bg-ink-600")}
-            />
-          ))}
-        </div>
-        {system && (
-          <span className="mono text-ink-500" title={`Auth mode: ${system.auth_mode}`}>
-            {system.principal.user} · {system.principal.role}
-          </span>
-        )}
-      </div>
     </header>
   );
 }
@@ -177,7 +115,12 @@ export default function App() {
                 )}
               >
                 <Icon className={cx("h-[18px] w-[18px] shrink-0", on ? "text-accent" : "text-ink-500 group-hover:text-ink-300")} />
-                {!collapsed && <span className="truncate">{n.label}</span>}
+                {!collapsed && (
+                  <span className="min-w-0 leading-tight">
+                    <span className="block truncate">{n.label}</span>
+                    <span className="block truncate text-[11px] font-normal text-ink-500">{n.hint}</span>
+                  </span>
+                )}
               </a>
             );
           })}
@@ -202,7 +145,7 @@ export default function App() {
           <ShieldAlert className="h-3.5 w-3.5" />
           RESEARCH PROTOTYPE · NOT FOR CLINICAL USE · SIMULATIONS ARE NON-CLINICAL · NO CONNECTION TO MEDICAL EQUIPMENT
         </div>
-        <TopBar />
+        <TopBar title={active.label} />
         <main className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
           {systemError || casesError ? (
             <div className="mx-auto max-w-xl pt-10">

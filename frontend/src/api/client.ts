@@ -73,7 +73,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     res = await fetch(path, { ...init, headers: headers(init?.headers as Record<string, string>) });
   } catch {
-    throw new ApiError(0, "network_error", "The OncoNova API is not reachable. Is the backend running on port 8000?");
+    throw new ApiError(0, "network_error", "The OncoNova API is not reachable. Is the backend running (default port 8010)?");
   }
   if (!res.ok) await raise(res);
   return res.json() as Promise<T>;
@@ -95,6 +95,8 @@ export interface VolumeData {
   scale: number;
   offset: number;
   label?: string | null;
+  /** Extra response headers some endpoints add (e.g. X-Beam-Angles). */
+  meta?: Record<string, string>;
 }
 
 export async function fetchVolume(path: string, signal?: AbortSignal): Promise<VolumeData> {
@@ -121,6 +123,9 @@ export async function fetchVolume(path: string, signal?: AbortSignal): Promise<V
     scale: Number(res.headers.get("X-Scale") ?? 1),
     offset: Number(res.headers.get("X-Offset") ?? 0),
     label: res.headers.get("X-Data-Label"),
+    meta: Object.fromEntries(
+      ["X-Beam-Angles", "X-Slice-Index"].flatMap((h) => (res.headers.get(h) !== null ? [[h, res.headers.get(h)!]] : [])),
+    ),
   };
 }
 
@@ -176,6 +181,8 @@ export const api = {
     request<DoseResult | Unavailable>(
       `/api/cases/${c}/dose?scenario_id=${scenario_id}&target_source=${encodeURIComponent(target_source)}`,
     ),
+  doseBeamsUrl: (c: string, scenario_id: string, target_source: string) =>
+    `/api/cases/${encodeURIComponent(c)}/dose/beams?scenario_id=${scenario_id}&target_source=${encodeURIComponent(target_source)}`,
   importDose: async (c: string, file: File, targetSource: string) => {
     const qs = new URLSearchParams({ filename: file.name, target_source: targetSource });
     let res: Response;
