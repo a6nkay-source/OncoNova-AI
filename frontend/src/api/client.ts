@@ -104,6 +104,14 @@ export interface VolumeData {
   meta?: Record<string, string>;
 }
 
+export interface EvaluationListItem {
+  report_id: string;
+  task: string;
+  model: { id: string };
+  dataset?: { id?: string | null; label?: string | null };
+  created_utc: string;
+}
+
 export async function fetchVolume(path: string, signal?: AbortSignal): Promise<VolumeData> {
   let res: Response;
   try {
@@ -211,7 +219,7 @@ export const api = {
     return (await res.json()) as DoseResult & { import: Record<string, unknown>; dose_max: number };
   },
   summary: (c: string) => request<ResearchSummary>(`/api/cases/${c}/summary`),
-  evaluations: () => request<{ reports: { report_id: string; task: string; model: { id: string }; created_utc: string }[] }>("/api/evaluations"),
+  evaluations: () => request<{ reports: EvaluationListItem[] }>("/api/evaluations"),
   evaluation: (id: string) => request<EvaluationReport>(`/api/evaluations/${encodeURIComponent(id)}`),
   datasets: () =>
     request<{ catalogue: DatasetEntry[]; catalogue_checked: string; local_manifests: Record<string, unknown>[] }>("/api/datasets"),

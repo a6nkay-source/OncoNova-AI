@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../../api/client";
+import { api, type EvaluationListItem } from "../../api/client";
 import type { BinaryReport, EvaluationReport, SummaryStat } from "../../api/types";
 import { DivergingBars, ForestPlot, LineChart, StripPlot } from "../../components/charts";
 import { DemoBadge, ErrorState, EvidenceBadge, Note, Panel, Segmented, Spinner, Stat, fmt, fmtCI } from "../../components/ui";
@@ -12,17 +12,32 @@ const SEG_TARGETS: Record<string, string> = {
   other_lesion: "Other lesion",
 };
 
+const SHOWN_TASKS = new Set(["segmentation", "future_progression_risk"]);
+
+/**
+ * The newest report per task, model and dataset, split by where the data came from.
+ * Synthetic and real-data results never share a heading, so a real-CT number is never
+ * described as synthetic (or the reverse). Other report types are only listed in the table.
+ */
+export function latestReports(reports: EvaluationListItem[]): { synthetic: string[]; real: string[] } {
+  const newest = new Map<string, EvaluationListItem>();
+  for (const r of reports) {
+    if (!SHOWN_TASKS.has(r.task)) continue;
+    const key = `${r.task}:${r.model?.id}:${r.dataset?.id ?? ""}`;
+    const seen = newest.get(key);
+    if (!seen || r.created_utc > seen.created_utc) newest.set(key, r);
+  }
+  const out = { synthetic: [] as string[], real: [] as string[] };
+  for (const r of [...newest.values()].sort((a, b) => (a.created_utc < b.created_utc ? 1 : -1))) {
+    (r.dataset?.label === "PUBLIC RESEARCH DATA" ? out.real : out.synthetic).push(r.report_id);
+  }
+  return out;
+}
+
 export function EvaluationSection() {
   const list = useAsync(() => api.evaluations(), []);
   const reports = list.data?.reports ?? [];
-  const latest = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const r of reports) {
-      const key = `${r.task}:${r.model?.id}`;
-      if (!seen.has(key)) seen.set(key, r.report_id);
-    }
-    return [...seen.values()];
-  }, [reports]);
+  const latest = useMemo(() => latestReports(reports), [reports]);
 
   if (list.loading && !list.data) return <Spinner label="Loading reports" />;
   if (list.error) return <ErrorState error={list.error} onRetry={list.reload} />;
@@ -37,14 +52,30 @@ export function EvaluationSection() {
     );
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-ev-uncertain/30 bg-ev-uncertain/5 px-4 py-2.5 text-[12.5px] text-ink-200">
-        <DemoBadge />
-        Every number below was measured by the evaluation scripts on held-out synthetic data and loaded from a stored report. It describes
-        behaviour on phantoms and simulated outcomes, not clinical performance.
-      </div>
-      {latest.map((id) => (
-        <ReportView key={id} id={id} />
-      ))}
+      {latest.real.length > 0 && (
+        <>
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-ev-measured/30 bg-ev-measured/5 px-4 py-2.5 text-[12.5px] text-ink-200">
+            <DemoBadge label="Public research data" />
+            Measured on real CT from a public research dataset, against its released manual masks, on patients the models never trained on.
+            These are research measurements on a few patients, not clinical performance.
+          </div>
+          {latest.real.map((id) => (
+            <ReportView key={id} id={id} />
+          ))}
+        </>
+      )}
+      {latest.synthetic.length > 0 && (
+        <>
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-ev-uncertain/30 bg-ev-uncertain/5 px-4 py-2.5 text-[12.5px] text-ink-200">
+            <DemoBadge />
+            Every number below was measured by the evaluation scripts on held-out synthetic data and loaded from a stored report. It describes
+            behaviour on phantoms and simulated outcomes, not clinical performance.
+          </div>
+          {latest.synthetic.map((id) => (
+            <ReportView key={id} id={id} />
+          ))}
+        </>
+      )}
       <Panel title="All stored reports">
         <table className="table-base">
           <thead>
@@ -52,6 +83,7 @@ export function EvaluationSection() {
               <th>Report</th>
               <th>Task</th>
               <th>Model</th>
+              <th>Dataset</th>
               <th>Created (UTC)</th>
             </tr>
           </thead>
@@ -61,6 +93,7 @@ export function EvaluationSection() {
                 <td className="mono">{r.report_id}</td>
                 <td>{r.task}</td>
                 <td>{r.model?.id}</td>
+                <td>{r.dataset?.id ?? ""}</td>
                 <td className="mono">{r.created_utc}</td>
               </tr>
             ))}
@@ -101,7 +134,9 @@ function SegmentationReport({ r }: { r: EvaluationReport }) {
   useEffect(() => setTarget("any_lesion"), [r.report_id]);
   const t = results[target];
   return (
-    <Panel title={`Segmentation · ${r.model.id} v${r.model.version} · ${String(r.dataset.n_patients)} test patients / ${String(r.dataset.n_scans)} scans`}>
+    <Panel
+      title={`Segmentation · ${r.model.id} v${r.model.version} · ${String(r.dataset.n_patients)} ${String(r.dataset.split ?? "test")} patients / ${String(r.dataset.n_scans)} scans`}
+    >
       <Header r={r} />
       <Segmented
         size="xs"

@@ -35,7 +35,7 @@ export function ModelsDataPage() {
       <div className="flex flex-wrap items-center gap-3">
         <Segmented value={tab} onChange={setTab} options={TABS} />
         <span className="text-[12px] text-ink-400">
-          {tab === "performance" && "Measured on held-out synthetic data and loaded from stored reports. Nothing here is clinical performance."}
+          {tab === "performance" && "Measured on held-out patients (synthetic phantoms, and real CT where shown) and loaded from stored reports. Nothing here is clinical performance."}
           {tab === "datasets" && "Public datasets checked against their official pages, plus the cases on this server."}
           {tab === "safety" && "What the prototype will not do, how data is handled, and access settings."}
         </span>
