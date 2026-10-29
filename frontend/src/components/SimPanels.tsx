@@ -2,6 +2,7 @@ import { HeartPulse, Wind } from "lucide-react";
 import { useEffect, useMemo, useRef, type MutableRefObject, type ReactNode } from "react";
 import type { VolumeData } from "../api/client";
 import { GATE_FRACTION, type SimSnapshot, type SimState } from "../sim/treatment";
+import { geometryMismatch } from "../viewer/geometry";
 import { LUTS } from "../viewer/volume";
 import { cx } from "./ui";
 
@@ -145,7 +146,7 @@ export function DoseReplay({ image, beams, target, sliceIndex, snap, angles, fie
     let cy = 0;
     let cxv = 0;
     let count = 0;
-    if (target && target.data.length === image.data.length) {
+    if (target && !geometryMismatch(image, target)) {
       const t = (yy: number, xx: number) => yy >= 0 && yy < ny && xx >= 0 && xx < nx && target.data[off + yy * nx + xx] === 1;
       for (let yy = 0; yy < ny; yy++)
         for (let xx = 0; xx < nx; xx++) {
@@ -167,7 +168,9 @@ export function DoseReplay({ image, beams, target, sliceIndex, snap, angles, fie
     const ctx = c.getContext("2d");
     if (!ctx) return;
     const out = new ImageData(new Uint8ClampedArray(base.px), nx, ny);
-    const nb = beams.shape[0];
+    // Per-beam slices are (beam, y, x) on this image's grid; anything else is not drawn.
+    const fits = beams.shape[1] === ny && beams.shape[2] === nx && (!beams.frame || !image.frame || beams.frame === image.frame);
+    const nb = fits ? beams.shape[0] : 0;
     const plane = ny * nx;
     const lut = LUTS.dose;
     const vmax = 1.1;
@@ -188,7 +191,7 @@ export function DoseReplay({ image, beams, target, sliceIndex, snap, angles, fie
       if (base.edge[i]) out.data[i * 4] = out.data[i * 4 + 1] = out.data[i * 4 + 2] = 255;
     }
     ctx.putImageData(out, 0, 0);
-  }, [base, beams, snap.delivered, nx, ny]);
+  }, [base, beams, image.frame, snap.delivered, nx, ny]);
 
   // Beam's direction on screen. Radiological display: patient left on the right, anterior at the top.
   const theta = (snap.gantry * Math.PI) / 180;

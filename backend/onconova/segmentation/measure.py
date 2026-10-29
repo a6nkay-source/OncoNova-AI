@@ -34,20 +34,29 @@ def sphericity(mask: np.ndarray, spacing_zyx: tuple[float, float, float]) -> flo
 
 
 def max_axial_diameter_mm(mask: np.ndarray, spacing_xyz: tuple[float, float, float]) -> float:
-    """Longest in-plane extent over all axial slices (a measurement, not a RECIST read)."""
+    """Longest in-plane extent over all axial slices (a measurement, not a RECIST read).
+
+    The longest distance between voxel centres, plus half a voxel's width along that
+    direction (in mm, so anisotropic pixels are handled). Centres alone underestimate;
+    adding a whole voxel overestimates round shapes. On simulated ellipses 10-40 mm across
+    this leaves a shape-dependent error of about -0.7 to +0.6 voxel (see tests); a binary
+    mask cannot resolve the diameter more finely than that.
+    """
     best = 0.0
     sx, sy = spacing_xyz[0], spacing_xyz[1]
     for z in np.unique(np.nonzero(mask)[0]):
         pts = np.argwhere(mask[z]).astype(float) * np.array([sy, sx])
-        if len(pts) < 3:
-            best = max(best, float(np.ptp(pts, axis=0).max()) + sx)
+        if len(pts) == 1:
+            best = max(best, max(sx, sy))  # below resolution: report one voxel
             continue
         try:
-            hull = pts[ConvexHull(pts).vertices]
-        except QhullError:
+            hull = pts[ConvexHull(pts).vertices] if len(pts) >= 3 else pts
+        except QhullError:  # collinear voxels
             hull = pts
-        d = np.sqrt(((hull[:, None, :] - hull[None, :, :]) ** 2).sum(-1)).max()
-        best = max(best, float(d) + sx)
+        d2 = ((hull[:, None, :] - hull[None, :, :]) ** 2).sum(-1)
+        i, j = np.unravel_index(int(d2.argmax()), d2.shape)
+        dy, dx = (hull[j] - hull[i]) / np.sqrt(d2[i, j])
+        best = max(best, float(np.sqrt(d2[i, j])) + 0.5 * (sy * abs(dy) + sx * abs(dx)))
     return best
 
 

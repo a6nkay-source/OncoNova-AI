@@ -1,7 +1,9 @@
 """Binary volume responses: raw little-endian arrays plus geometry headers.
 
 Clients reconstruct values as ``raw * X-Scale + X-Offset`` with ``raw`` read in
-``X-Dtype``, C order, shape ``X-Shape`` (z, y, x).
+``X-Dtype``, C order, shape ``X-Shape`` (z, y, x). ``X-Frame`` names the image grid the
+voxels belong to (``case/timepoint``); a client must draw an overlay only on an image with
+the same frame and geometry.
 """
 
 from __future__ import annotations
@@ -12,10 +14,10 @@ from fastapi import Response
 from onconova.imaging.volume import Volume
 
 EXPOSED_HEADERS = ["X-Shape", "X-Spacing", "X-Origin", "X-Direction", "X-Dtype", "X-Scale", "X-Offset", "X-Data-Label",
-                   "X-Beam-Angles", "X-Slice-Index"]
+                   "X-Frame", "X-Beam-Angles", "X-Slice-Index"]
 
 
-def volume_response(volume: Volume, array: np.ndarray, *, kind: str, label: str | None = None,
+def volume_response(volume: Volume, array: np.ndarray, *, kind: str, frame: str, label: str | None = None,
                     vmax: float | None = None) -> Response:
     if kind == "image":
         if volume.modality == "CT":
@@ -42,6 +44,7 @@ def volume_response(volume: Volume, array: np.ndarray, *, kind: str, label: str 
         "X-Dtype": dtype,
         "X-Scale": f"{scale:.9g}",
         "X-Offset": f"{offset:.9g}",
+        "X-Frame": frame,
         "Cache-Control": "no-store",
     }
     if label:

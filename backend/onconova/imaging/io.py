@@ -121,16 +121,21 @@ def save_nifti(volume: Volume, path: Path | str) -> None:
     sitk.WriteImage(volume.to_sitk(), str(path), useCompression=True)
 
 
-def load_label_like(path: Path | str, reference: Volume) -> np.ndarray:
-    """Load a label map and require that it shares the reference image geometry."""
-    label = load_nifti(path, is_label=True)
-    if not label.same_geometry(reference):
+def load_like(path: Path | str, reference: Volume, *, is_label: bool) -> Volume:
+    """Load a label or continuous map and require that it shares the reference image geometry."""
+    overlay = load_nifti(path, is_label=is_label)
+    if not overlay.same_geometry(reference):
+        kind = "label map" if is_label else "map"
         raise ImagingError(
             "geometry_mismatch",
-            "The label map does not share the image's shape, spacing, origin and direction.",
-            details={"image": reference.geometry(), "label": label.geometry()},
+            f"The {kind} does not share the image's shape, spacing, origin and direction.",
+            details={"image": reference.geometry(), "overlay": overlay.geometry()},
         )
-    return label.array
+    return overlay
+
+
+def load_label_like(path: Path | str, reference: Volume) -> np.ndarray:
+    return load_like(path, reference, is_label=True).array
 
 
 def _slice_positions(headers: list[pydicom.Dataset]) -> np.ndarray:

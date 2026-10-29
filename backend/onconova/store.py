@@ -28,7 +28,7 @@ from typing import Any
 import numpy as np
 
 from onconova.errors import ConflictError, NotFoundError, OncoNovaError
-from onconova.imaging.io import load_label_like, load_nifti, save_nifti
+from onconova.imaging.io import load_like, load_nifti, save_nifti
 from onconova.imaging.volume import Volume
 
 ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
@@ -121,18 +121,21 @@ class CaseStore:
             raise OncoNovaError("invalid_label_name", "Invalid label name.", status_code=400)
         return self.tp_dir(case_id, tp_id) / f"{name}.nii.gz"
 
-    def label(self, case_id: str, tp_id: str, name: str) -> np.ndarray | None:
+    def overlay(self, case_id: str, tp_id: str, name: str, *, is_label: bool) -> Volume | None:
+        """A stored label or continuous map, refused unless it shares the image's geometry."""
         path = self.label_path(case_id, tp_id, name)
         if not path.exists():
             return None
         ref = self.image(case_id, tp_id)
-        return self._cached(path, lambda: ref.with_array(load_label_like(path, ref))).array
+        return self._cached(path, lambda: load_like(path, ref, is_label=is_label))
+
+    def label(self, case_id: str, tp_id: str, name: str) -> np.ndarray | None:
+        vol = self.overlay(case_id, tp_id, name, is_label=True)
+        return None if vol is None else vol.array
 
     def float_map(self, case_id: str, tp_id: str, name: str) -> np.ndarray | None:
-        path = self.label_path(case_id, tp_id, name)
-        if not path.exists():
-            return None
-        return self._cached(path, lambda: load_nifti(path)).array
+        vol = self.overlay(case_id, tp_id, name, is_label=False)
+        return None if vol is None else vol.array
 
     def save_map(self, case_id: str, tp_id: str, name: str, array: np.ndarray) -> Path:
         ref = self.image(case_id, tp_id)

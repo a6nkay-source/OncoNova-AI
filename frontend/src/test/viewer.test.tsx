@@ -173,7 +173,7 @@ describe("slice viewer controls", () => {
 
   it("shows the slice position in millimetres and the zoom", () => {
     render(<SliceView image={image} plane="axial" position={[4, 3, 2]} onPosition={() => {}} level={0} width={100} />);
-    expect(screen.getByText("z -2.0 mm")).toBeInTheDocument();
+    expect(screen.getByText("I 2.0 mm")).toBeInTheDocument(); // z = -10 + 4 x 2 mm (LPS), i.e. 2 mm inferior
     expect(screen.getByText(/^100%/)).toBeInTheDocument();
   });
 

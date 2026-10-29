@@ -4,6 +4,52 @@ Each entry says what changed and how it was checked. "Measured" means a test or 
 
 ## Unreleased
 
+### Stage 2: coordinate correctness
+
+The loaders were already correct. What was missing was proof, plus three ways an overlay could reach the screen in the wrong place.
+
+- **DICOM and NIfTI orientation, spacing and slice order are now tested end to end** (`backend/tests/test_geometry.py`, 66 tests). Each test writes markers with distinct values at known patient positions, loads the file normally, finds each marker and checks its LPS position to 0.001 mm. Non-square pixels and matrices catch swapped axes, and a different marker position on every slice catches flips and slice-order mistakes. Cases covered:
+  - all 48 axis orders and flips of a NIfTI;
+  - an oblique NIfTI (position kept, oblique warning raised);
+  - DICOM series that are axial, axial with either in-plane axis reversed, coronal, sagittal and oblique, each stacked both ways along the slice normal;
+  - series whose file names and InstanceNumbers are shuffled, reversed or misleading.
+
+  *All passed on the existing loader.* To show the tests can fail, I broke the loader three ways for one run each:
+  - stacking files in name order: 8 failures;
+  - skipping the LPS reorientation: 55 failures;
+  - mirroring the voxels without changing the header: all 64 failures.
+- **Overlays are checked against their image on both ends.**
+  - Server: uncertainty, saliency and dose maps were loaded without comparing their grid to the image, and were served with the image's geometry headers. Every stored map is now loaded against its image and refused with `geometry_mismatch` if shape, spacing, origin or direction differ. Overlays are served with their own geometry and a new `X-Frame` header naming the scan they belong to. *Tested:* a map shifted by 5 mm returns 422 `geometry_mismatch`, and overlays carry the same frame and geometry as their image. A follow-up registered into the baseline carries the baseline's frame.
+  - Client: the viewer accepted any overlay with the same voxel count, so a mask from another scan of the same size would have been drawn without warning. It now requires a matching frame and geometry, using the server's tolerances. Otherwise the overlay's row says "Not drawn" and why. The LINAC dose replay checks its target mask and per-beam slices the same way.
+- **Switching scans can no longer pair one scan's overlays with another's image.** While a new scan loaded, the image hook kept returning the previous scan. Now it never returns a volume for a URL other than the one requested. The viewer keeps the last scan on screen under a "Loading scan" veil with no overlays, so zoom and pan survive the switch. *Regression test added; it fails on the old hook.*
+- **One path from voxel to screen.** Crosshair, lesion focus and clicks now go through `voxelToScreen` and `screenToVoxel` in `viewer/transform.ts`.
+  - *Unit test:* every voxel of an anisotropic, non-cubic volume, in all three planes, at three viewport sizes, zooms and pans, is drawn at the pixel a click there selects.
+  - *Render-path test* (`frontend/src/test/alignment.test.tsx`): a scan with one bright voxel and a mask on it is drawn through the real `SliceView` into a recording canvas. In each plane, after two resizes, a zoom and a pan, the bright pixel, the mask outline's bounds, the crosshair and a click all land on the same screen pixel. I broke this path five ways to check the tests catch it, and each was caught:
+    - markers half a voxel off: 4 failures;
+    - outline half a voxel off: 3 failures;
+    - coronal rows not flipped: 2 failures;
+    - overlays accepted by voxel count: 1 failure;
+    - the old loading hook: 1 failure.
+  - *Bug it found:* the crosshair was snapped with `round(x) + 0.5`, putting it up to 1 screen pixel off the voxel centre, which is a third of a voxel at the fitted zoom. It now snaps to the pixel containing the centre, at most 0.5 px off.
+- **Positions in patient millimetres.** Each view's slice readout and the crosshair footer show LPS millimetres from the image header, as anatomical directions ("R 75.9 · A 1.1 · S 13.8 mm"). The client conversion uses the direction matrix and matches the server's `index_to_physical`. Oblique scans show "oblique" instead of a slice position, plus a note that the orientation letters are approximate.
+- **Diameter bias reduced, not removed.** The maximum axial diameter used the longest centre-to-centre distance plus one x-spacing, whatever the direction. On simulated, digitised ellipses 10–40 mm across, that overestimated round lesions by up to 0.9 voxel.
+  - I compared four estimators (centres alone, plus one voxel, plus half the voxel's projected width, plus all of it). Adding half the voxel's width along the measured direction, in mm, was best: mean |bias| 0.23 voxel against 0.39, worst case 0.73 against 0.91.
+  - *Test on a different random seed:* the mean bias stays under 0.8 voxel for every spacing, size and shape. By spacing it is −0.17 to +0.35 mm at 0.7 mm, −1.5 to +1.0 mm at 2.2 mm, and −0.5 to +0.7 mm at 1.6 × 0.8 mm pixels.
+  - A binary mask cannot resolve a diameter more finely than about a voxel, and the remaining error depends on shape.
+  - On the stored DEMO-001 masks, the new primary-lesion diameters are 0.7–0.9 mm smaller than the old ones. Results stored before this change keep the old value until the case is re-run.
+- **Measurements use physical spacing.** A test shows that diameter and volume scale with the per-axis spacing in mm, not voxel counts, and that stretching rows and columns gives different results.
+
+Test status at the end of the stage: 195 backend tests pass (127 before: 66 geometry, 2 measurement), and 40 frontend tests pass (32 before). The TypeScript check is clean and the production build succeeds. In the browser, on DEMO-001:
+- the footer position matches the header arithmetic;
+- switching scans raised no errors or "Not drawn" notices;
+- at 381% zoom in Voxels mode, both outlines sit on the voxel grid over the lesion;
+- the LINAC replay still draws its dose wash and target outline.
+
+Not covered, carried forward:
+- The app has no cropping or resampling of displayed volumes apart from registration. Registration's label resampling was already tested (`test_longitudinal.py`).
+- Phone touch pinch is still not implemented.
+- The "Loading scan" veil appears only when a scan isn't cached yet. In the browser the scans were already cached, so I could only check it in the unit test.
+
 ### Stage 1: viewer graphics and resolution (display only)
 
 No data, model or measurement code changed in this stage.

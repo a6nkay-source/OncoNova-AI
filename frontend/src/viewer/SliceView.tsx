@@ -3,15 +3,28 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { VolumeData } from "../api/client";
 import { cx } from "../components/ui";
 import { traceContours, type Loop } from "./contours";
-import { centerOn, fitView, panBy, pixelSize, planeToScreen, screenToPlane, zoomAt, type ViewState, type Viewport } from "./transform";
+import { isAxisAligned, patientAxis } from "./geometry";
+import {
+  centerOn,
+  fitView,
+  panBy,
+  pixelSize,
+  planeToScreen,
+  screenToPixel,
+  screenToVoxel,
+  voxelToPlane,
+  voxelToScreen,
+  zoomAt,
+  type ViewState,
+  type Viewport,
+} from "./transform";
 import {
   LESION_COLORS,
   LUTS,
   type LutName,
   type Plane,
   type RGB,
-  crosshair,
-  pixelToVoxel,
+  normalAxis,
   planeInfo,
   sliceIndexFor,
   sliceLabels,
@@ -49,7 +62,6 @@ const ORIENT: Record<Plane, [string, string, string, string]> = {
   coronal: ["R", "L", "S", "I"],
   sagittal: ["A", "P", "S", "I"],
 };
-const AXIS: Record<Plane, string> = { axial: "z", coronal: "y", sagittal: "x" };
 const SLICE_PX = 50; // wheel distance per slice for trackpads
 const rgba = (c: RGB, a: number) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
@@ -127,8 +139,8 @@ export function SliceView({
   useEffect(() => setView(fitView(info)), [info.width, info.height, resetSignal]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!focusSignal) return;
-    const [c, r] = crosshair(image.shape, plane, focusSignal.zyx);
-    setView((v) => (v.zoom > 1 ? centerOn(info, v, c + 0.5, r + 0.5) : v));
+    const [u, v] = voxelToPlane(image.shape, plane, focusSignal.zyx);
+    setView((view) => (view.zoom > 1 ? centerOn(info, view, u, v) : view));
   }, [focusSignal?.n]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ----- cached per-slice layers (rebuilt only when their inputs change) -----
@@ -251,16 +263,18 @@ export function SliceView({
     }
 
     if (showCrosshair) {
-      const [cc, rr] = crosshair(image.shape, plane, position);
-      const [x, y] = planeToScreen(info, box, view, cc + 0.5, rr + 0.5);
+      const [x, y] = voxelToScreen(info, box, view, image.shape, plane, position);
       ctx.strokeStyle = "rgba(76,155,255,0.55)";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
+      // Snap to the pixel containing the voxel centre (a crisp 1 px line, at most 0.5 px off).
+      const lx = Math.floor(x) + 0.5;
+      const ly = Math.floor(y) + 0.5;
       ctx.beginPath();
-      ctx.moveTo(Math.round(x) + 0.5, 0);
-      ctx.lineTo(Math.round(x) + 0.5, box.height);
-      ctx.moveTo(0, Math.round(y) + 0.5);
-      ctx.lineTo(box.width, Math.round(y) + 0.5);
+      ctx.moveTo(lx, 0);
+      ctx.lineTo(lx, box.height);
+      ctx.moveTo(0, ly);
+      ctx.lineTo(box.width, ly);
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -284,13 +298,6 @@ export function SliceView({
     const rect = canvasRef.current!.getBoundingClientRect();
     return [e.clientX - rect.left, e.clientY - rect.top];
   };
-  const voxelAt = (x: number, y: number): [number, number] | null => {
-    const [u, v] = screenToPlane(info, box, view, x, y);
-    const col = Math.floor(u);
-    const row = Math.floor(v);
-    return !(col >= 0 && row >= 0 && col < info.width && row < info.height) ? null : [col, row];
-  };
-
   const paintAt = (col: number, row: number) => {
     if (!brush) return;
     const idx: number[] = [];
@@ -317,11 +324,12 @@ export function SliceView({
     } else if (d.mode === "window") {
       // Horizontal drag changes the width, vertical drag the level (drag up = brighter).
       onWindow?.(d.level + (y - d.y) * 2, Math.max(1, d.width + (x - d.x) * 4));
+    } else if (d.mode === "paint") {
+      const p = screenToPixel(info, box, view, x, y);
+      if (p) paintAt(p[0], p[1]);
     } else {
-      const p = voxelAt(x, y);
-      if (!p) return;
-      if (d.mode === "paint") paintAt(p[0], p[1]);
-      else onPosition(pixelToVoxel(image.shape, plane, k, p[0], p[1]));
+      const zyx = screenToVoxel(info, box, view, image.shape, plane, k, x, y);
+      if (zyx) onPosition(zyx);
     }
   };
 
@@ -409,6 +417,7 @@ export function SliceView({
   const [kx] = pixelSize(info, box, view.zoom);
   const [l, rt, t, b] = ORIENT[plane];
   const offset = sliceOffsetMm(image, plane, k);
+  const oblique = !isAxisAligned(image);
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-lg border border-ink-700/70 bg-black">
       <div
@@ -472,8 +481,15 @@ export function SliceView({
           aria-label={`${title ?? plane} slice`}
           className="slice-slider h-1 min-w-0 flex-1"
         />
-        <span className="shrink-0 font-mono text-[10px] text-ink-500">
-          {AXIS[plane]} {offset === null ? "" : `${offset.toFixed(1)} mm`}
+        <span
+          className="shrink-0 font-mono text-[10px] text-ink-500"
+          title={
+            oblique
+              ? "Oblique scan: this slice is tilted, so it has no single patient position"
+              : "Slice position in patient coordinates (DICOM LPS) from the image header"
+          }
+        >
+          {oblique ? "oblique" : offset === null ? "" : `${patientAxis(normalAxis(plane), offset)} mm`}
         </span>
         <span className="shrink-0 font-mono text-[10px] text-ink-400" title={`Zoom relative to fit; each voxel spans ${kx.toFixed(1)} screen pixels`}>
           {Math.round(view.zoom * 100)}%{box.width >= 300 ? ` · ${kx.toFixed(1)} px/vox` : ""}

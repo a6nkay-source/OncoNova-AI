@@ -126,7 +126,7 @@ def get_dose_beams(case_id: str, scenario_id: str = Query(..., pattern=r"^S[0-9]
     result, beams = store.result(case_id, key), store.array(case_id, f"{key}_beams")
     if result is None or beams is None or "beams" not in result:
         raise NotFoundError("map_not_found", "No per-beam replay for this scenario; run the simulation first.")
-    response = volume_response(store.image(case_id, result["tp_id"]), beams, kind="map",
+    response = volume_response(store.image(case_id, result["tp_id"]), beams, kind="map", frame=f"{case_id}/{result['tp_id']}",
                                vmax=float(beams.max()) or 1.0, label="SIMULATED - NON-CLINICAL")
     response.headers["X-Beam-Angles"] = ",".join(str(a) for a in result["beams"]["angles_deg"])
     response.headers["X-Slice-Index"] = str(result["beams"]["slice_index"])

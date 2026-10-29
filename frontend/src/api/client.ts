@@ -93,6 +93,10 @@ export interface VolumeData {
   shape: [number, number, number]; // z, y, x
   spacing: [number, number, number]; // x, y, z (mm)
   origin?: [number, number, number]; // x, y, z (LPS mm)
+  /** Row-major 3x3 direction cosines; identity for axis-aligned scans after LPS reorientation. */
+  direction?: number[];
+  /** The image grid these voxels belong to (``case/timepoint``); overlays must match their image's frame. */
+  frame?: string | null;
   scale: number;
   offset: number;
   label?: string | null;
@@ -114,6 +118,8 @@ export async function fetchVolume(path: string, signal?: AbortSignal): Promise<V
   const spacing = res.headers.get("X-Spacing")!.split(",").map(Number) as [number, number, number];
   const originHeader = res.headers.get("X-Origin");
   const origin = originHeader ? (originHeader.split(",").map(Number) as [number, number, number]) : undefined;
+  const directionHeader = res.headers.get("X-Direction");
+  const direction = directionHeader ? directionHeader.split(",").map(Number) : undefined;
   const dtype = res.headers.get("X-Dtype");
   const data = dtype === "int16" ? new Int16Array(buf) : new Uint8Array(buf);
   if (data.length !== shape[0] * shape[1] * shape[2]) {
@@ -124,6 +130,8 @@ export async function fetchVolume(path: string, signal?: AbortSignal): Promise<V
     shape,
     spacing,
     origin,
+    direction: direction?.length === 9 ? direction : undefined,
+    frame: res.headers.get("X-Frame"),
     scale: Number(res.headers.get("X-Scale") ?? 1),
     offset: Number(res.headers.get("X-Offset") ?? 0),
     label: res.headers.get("X-Data-Label"),

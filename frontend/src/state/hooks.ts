@@ -83,34 +83,32 @@ export function useVolumes(urls: (string | null)[], version = 0): {
   return { volumes: state.volumes, errors: state.errors };
 }
 
-/** Load a binary volume, sharing one request per URL across components. ``null`` url = nothing to load. */
+/**
+ * Load a binary volume, sharing one request per URL across components. ``null`` url = nothing to load.
+ * While a new URL loads, ``volume`` is null rather than the previous scan, so nothing loaded
+ * for the new scan (overlays, positions) is ever drawn on the old one.
+ */
 export function useVolume(url: string | null, version = 0): { volume: VolumeData | null; error: unknown; loading: boolean } {
-  const [volume, setVolume] = useState<VolumeData | null>(null);
-  const [error, setError] = useState<unknown>(null);
-  const [loading, setLoading] = useState(false);
+  const key = url ? `${url}#${version}` : "";
+  const [state, setState] = useState<{ key: string; volume: VolumeData | null; error: unknown }>({ key: "", volume: null, error: null });
   useEffect(() => {
-    if (!url) {
-      setVolume(null);
-      setError(null);
-      return;
-    }
+    if (!url) return;
     let live = true;
-    const key = `${url}#${version}`;
     if (!cache.has(key)) {
       const p = fetchVolume(url);
       cache.set(key, p);
       p.catch(() => cache.delete(key));
     }
-    setLoading(true);
-    setError(null);
     cache
       .get(key)!
-      .then((v) => live && setVolume(v))
-      .catch((e) => live && (setError(e), setVolume(null)))
-      .finally(() => live && setLoading(false));
+      .then((volume) => live && setState({ key, volume, error: null }))
+      .catch((error) => live && setState({ key, volume: null, error }));
     return () => {
       live = false;
     };
-  }, [url, version]);
-  return { volume, error, loading };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  if (!url) return { volume: null, error: null, loading: false };
+  if (state.key !== key) return { volume: null, error: null, loading: true };
+  return { volume: state.volume, error: state.error, loading: false };
 }

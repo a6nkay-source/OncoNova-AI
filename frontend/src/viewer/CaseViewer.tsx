@@ -1,8 +1,9 @@
 import { RotateCcw } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, type VolumeData } from "../api/client";
 import { ErrorState, Segmented, Spinner, cx } from "../components/ui";
 import { useVolume, useVolumes } from "../state/hooks";
+import { geometryMismatch, isAxisAligned, patientAxis, voxelToPatient } from "./geometry";
 import { SliceView, type Brush, type LabelStyle, type Overlay } from "./SliceView";
 import { LUTS, type LutName, type Plane, type RGB } from "./volume";
 
@@ -109,7 +110,13 @@ export function CaseViewer({
   onPositionChange?: (zyx: [number, number, number]) => void;
   syncPosition?: [number, number, number] | null;
 }) {
-  const { volume: image, error, loading } = useVolume(imageUrl ?? api.imageUrl(caseId, tpId), version);
+  const { volume: loaded, error, loading } = useVolume(imageUrl ?? api.imageUrl(caseId, tpId), version);
+  // While the next scan loads, keep showing the last one (so zoom and pan survive a switch)
+  // under a veil and with no overlays: nothing from the new scan is drawn on the old one.
+  const lastImage = useRef<VolumeData | null>(null);
+  if (loaded) lastImage.current = loaded;
+  const image = loaded ?? (loading ? lastImage.current : null);
+  const stale = !loaded && !!image;
   const visible = overlays.filter((o) => o.visible !== false);
   const { volumes, errors } = useVolumes(
     visible.map((o) => (o.data ? null : o.url)),
@@ -164,9 +171,15 @@ export function CaseViewer({
   };
 
   const ready: Overlay[] = [];
+  const mismatch: Record<string, string> = {};
   visible.forEach((o, i) => {
     const data = o.data ?? volumes[i];
-    if (!data || !image || data.data.length !== image.data.length) return;
+    if (!data || !image || stale) return;
+    const why = geometryMismatch(image, data);
+    if (why) {
+      mismatch[o.id] = why;
+      return;
+    }
     const p = prefs.overlays[o.id] ?? {};
     const colors: Record<number, RGB> = {};
     for (const e of o.legend ?? []) for (const v of e.values) colors[v] = colorOf(o, e);
@@ -217,6 +230,7 @@ export function CaseViewer({
   );
   const [nz, ny, nx] = image.shape;
   const [sx, sy, sz] = image.spacing;
+  const patient = voxelToPatient(image, pos);
 
   return (
     <div className={cx("flex h-full min-h-0 flex-col gap-2", className)}>
@@ -254,6 +268,18 @@ export function CaseViewer({
         </div>
       </div>
       {overlayError ? <p className="text-[12px] text-ev-uncertain">An overlay could not be loaded.</p> : null}
+      {!isAxisAligned(image) && (
+        <p className="text-[12px] text-ev-uncertain">
+          Oblique scan: the views follow the voxel grid, which is tilted relative to the patient, so the orientation letters are approximate.
+          Positions in mm below are exact.
+        </p>
+      )}
+      <div className="relative">
+      {stale && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-ink-950/60">
+          <Spinner label="Loading scan" />
+        </div>
+      )}
       {layout === "tri" && (
         <div className="grid grid-cols-1 gap-2 lg:h-[clamp(460px,66vh,800px)] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="h-[400px] lg:h-full">{view("axial", { brush })}</div>
@@ -271,6 +297,7 @@ export function CaseViewer({
         </div>
       )}
       {layout === "axial" && <div className="h-[380px]">{view("axial", { brush })}</div>}
+      </div>
 
       {visible.some((o) => o.name) && (
         <div className="flex flex-col gap-1.5 rounded-lg border border-ink-800 bg-ink-925/60 px-3 py-2">
@@ -281,6 +308,7 @@ export function CaseViewer({
               prefs={prefs.overlays[o.id] ?? {}}
               colorOf={(e) => colorOf(o, e)}
               onChange={(patch) => patchOverlay(o.id, patch)}
+              problem={mismatch[o.id]}
             />
           ))}
         </div>
@@ -289,8 +317,9 @@ export function CaseViewer({
         <span className="font-mono">
           Matrix {nx}×{ny}×{nz} · voxel {sx.toFixed(2)}×{sy.toFixed(2)} mm · slice spacing {sz.toFixed(2)} mm
         </span>
-        <span className="font-mono">
+        <span className="font-mono" title="Crosshair voxel (z, y, x) and its centre in patient coordinates (DICOM LPS) from the image header">
           z{pos[0]} y{pos[1]} x{pos[2]}
+          {patient && ` · ${patientAxis(0, patient[0])} · ${patientAxis(1, patient[1])} · ${patientAxis(2, patient[2])} mm`}
         </span>
         <span className="w-full">
           Scroll, arrow keys or the slider: change slice · ⌘/Ctrl + scroll or pinch: zoom · Shift- or right-drag: pan · Alt-drag: window/level ·
@@ -342,11 +371,14 @@ function OverlayControls({
   prefs,
   colorOf,
   onChange,
+  problem,
 }: {
   spec: OverlaySpec;
   prefs: OverlayPrefs;
   colorOf: (e: LegendEntry) => RGB;
   onChange: (patch: OverlayPrefs) => void;
+  /** Why the overlay is not drawn, when its geometry does not match the scan. */
+  problem?: string;
 }) {
   const opacity = prefs.opacity ?? spec.opacity;
   return (
@@ -386,6 +418,11 @@ function OverlayControls({
           <span className="w-8 text-right font-mono text-[10.5px]">{Math.round(opacity * 100)}%</span>
         </label>
       </div>
+      {problem && (
+        <span role="alert" className="w-full text-ev-uncertain">
+          Not drawn: {problem}.
+        </span>
+      )}
     </div>
   );
 }

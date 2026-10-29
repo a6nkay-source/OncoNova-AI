@@ -1,4 +1,5 @@
 import type { VolumeData } from "../api/client";
+import { isAxisAligned } from "./geometry";
 
 export type Plane = "axial" | "coronal" | "sagittal";
 
@@ -60,10 +61,16 @@ export function sliceLabels(v: VolumeData, plane: Plane, k: number): Uint8Array 
   return out;
 }
 
-/** Physical position of slice ``k`` along the plane normal (LPS mm), or null without an origin. */
+/** LPS axis along the normal of ``plane``: x for sagittal, y for coronal, z for axial. */
+export const normalAxis = (plane: Plane): 0 | 1 | 2 => (plane === "axial" ? 2 : plane === "coronal" ? 1 : 0);
+
+/**
+ * Position of slice ``k`` along the plane normal (LPS mm). Null without an origin, or for an
+ * oblique scan, whose slices are not at one patient coordinate.
+ */
 export function sliceOffsetMm(v: VolumeData, plane: Plane, k: number): number | null {
-  if (!v.origin) return null;
-  const axis = plane === "axial" ? 2 : plane === "coronal" ? 1 : 0;
+  if (!v.origin || !isAxisAligned(v)) return null;
+  const axis = normalAxis(plane);
   return v.origin[axis] + k * v.spacing[axis];
 }
 

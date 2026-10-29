@@ -69,4 +69,54 @@ def test_shape_descriptors():
     box[18:22, 18:22, 2:38] = True
     assert sphericity(sph, (1, 1, 1)) > 0.85
     assert sphericity(box, (1, 1, 1)) < sphericity(sph, (1, 1, 1))
-    assert max_axial_diameter_mm(sph, (1.0, 1.0, 1.0)) == pytest.approx(25, abs=2)
+    assert max_axial_diameter_mm(sph, (1.0, 1.0, 1.0)) == pytest.approx(24, abs=1)
+
+
+def ellipse_slice(rng, diameter_mm, aspect, sy, sx):
+    """One axial slice of a randomly rotated, randomly offset ellipse; returns (1, rows, cols)."""
+    a, b, th = diameter_mm / 2, diameter_mm / 2 * aspect, rng.uniform(0, np.pi)
+    n = int(np.ceil(diameter_mm / min(sx, sy))) + 6
+    oy, ox = rng.uniform(0, 1, 2)
+    yy, xx = np.meshgrid((np.arange(n) - n / 2 + oy) * sy, (np.arange(n) - n / 2 + ox) * sx, indexing="ij")
+    u, v = xx * np.cos(th) + yy * np.sin(th), -xx * np.sin(th) + yy * np.cos(th)
+    return ((u / a) ** 2 + (v / b) ** 2 <= 1)[None]
+
+
+def test_max_axial_diameter_bias_is_within_a_voxel_and_smaller_than_before():
+    """Mean error on digitised ellipses of known size, in voxels, per spacing, size and shape."""
+
+    def previous(mask, spacing):  # centre-to-centre extent plus one x-spacing, as before Stage 2
+        from scipy.spatial import ConvexHull, QhullError
+
+        pts = np.argwhere(mask[0]).astype(float) * [spacing[1], spacing[0]]
+        try:
+            hull = pts[ConvexHull(pts).vertices]
+        except QhullError:
+            hull = pts
+        return float(np.sqrt(((hull[:, None] - hull[None]) ** 2).sum(-1)).max()) + spacing[0]
+
+    rng = np.random.default_rng(7)  # not the seeds used to choose the method
+    new_bias, old_bias = [], []
+    for sy, sx in [(0.7, 0.7), (2.2, 2.2), (1.6, 0.8)]:
+        for d in (10, 20, 40):
+            for aspect in (1.0, 0.6, 0.35):
+                masks = [ellipse_slice(rng, d, aspect, sy, sx) for _ in range(40)]
+                voxel = max(sx, sy)
+                new_bias.append(np.mean([max_axial_diameter_mm(m, (sx, sy, 1.0)) - d for m in masks]) / voxel)
+                old_bias.append(np.mean([previous(m, (sx, sy)) - d for m in masks]) / voxel)
+    new_bias, old_bias = np.array(new_bias), np.array(old_bias)
+    assert np.all(np.abs(new_bias) < 0.8), new_bias.round(2)
+    assert np.abs(new_bias).mean() < 0.3
+    assert np.abs(new_bias).mean() < np.abs(old_bias).mean() and np.abs(new_bias).max() < np.abs(old_bias).max()
+
+
+def test_measurements_use_physical_spacing_not_voxel_counts():
+    mask = ellipse_slice(np.random.default_rng(3), 20, 0.6, 1.0, 1.0)
+    d1 = max_axial_diameter_mm(mask, (1.0, 1.0, 1.0))
+    assert max_axial_diameter_mm(mask, (2.0, 2.0, 1.0)) == pytest.approx(2 * d1)
+    assert volume_cc(mask, (2.0, 2.0, 3.0)) == pytest.approx(12 * volume_cc(mask, (1.0, 1.0, 1.0)))
+    # Stretching only the rows changes the result: spacing is applied per axis, not averaged.
+    assert max_axial_diameter_mm(mask, (1.0, 2.0, 1.0)) != pytest.approx(max_axial_diameter_mm(mask, (2.0, 1.0, 1.0)))
+    single = np.zeros((1, 5, 5), bool)
+    single[0, 2, 2] = True
+    assert max_axial_diameter_mm(single, (0.7, 0.9, 2.5)) == pytest.approx(0.9)

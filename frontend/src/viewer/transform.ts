@@ -1,9 +1,9 @@
-import type { PlaneInfo } from "./volume";
+import { crosshair, pixelToVoxel, type Plane, type PlaneInfo } from "./volume";
 
 /**
- * Pan and zoom for one slice view. Everything that maps between plane pixels and the
- * screen (image, outlines, crosshair, clicks, brush) goes through these functions, so
- * they cannot drift apart.
+ * Pan and zoom for one slice view. Everything that maps between voxels, plane pixels and
+ * the screen (image, outlines, crosshair, markers, clicks, brush) goes through these
+ * functions, so they cannot drift apart.
  *
  * Plane pixels: voxel (col, row) covers [col, col + 1) x [row, row + 1). Screen: CSS
  * pixels from the canvas's top-left corner. Zoom 1 fits the whole slice at its
@@ -64,3 +64,41 @@ export function panBy(info: PlaneInfo, vp: Viewport, view: ViewState, dx: number
 }
 
 export const centerOn = (info: PlaneInfo, view: ViewState, u: number, v: number): ViewState => ({ zoom: view.zoom, center: clampCenter(info, [u, v]) });
+
+// ----- voxels <-> screen (the only path markers, the crosshair and clicks use) -----
+
+type Shape = [number, number, number];
+
+/** Plane point at the centre of voxel zyx, i.e. the middle of the pixel it is drawn as. */
+export function voxelToPlane(shape: Shape, plane: Plane, zyx: [number, number, number]): [number, number] {
+  const [col, row] = crosshair(shape, plane, zyx);
+  return [col + 0.5, row + 0.5];
+}
+
+export function voxelToScreen(info: PlaneInfo, vp: Viewport, view: ViewState, shape: Shape, plane: Plane, zyx: [number, number, number]): [number, number] {
+  const [u, v] = voxelToPlane(shape, plane, zyx);
+  return planeToScreen(info, vp, view, u, v);
+}
+
+/** Plane pixel (col, row) under a screen point, or null outside the slice. */
+export function screenToPixel(info: PlaneInfo, vp: Viewport, view: ViewState, x: number, y: number): [number, number] | null {
+  const [u, v] = screenToPlane(info, vp, view, x, y);
+  const col = Math.floor(u);
+  const row = Math.floor(v);
+  return col >= 0 && row >= 0 && col < info.width && row < info.height ? [col, row] : null;
+}
+
+/** Voxel (z, y, x) under a screen point on slice ``k``, or null outside the slice. */
+export function screenToVoxel(
+  info: PlaneInfo,
+  vp: Viewport,
+  view: ViewState,
+  shape: Shape,
+  plane: Plane,
+  k: number,
+  x: number,
+  y: number,
+): [number, number, number] | null {
+  const p = screenToPixel(info, vp, view, x, y);
+  return p ? pixelToVoxel(shape, plane, k, p[0], p[1]) : null;
+}

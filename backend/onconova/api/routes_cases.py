@@ -62,7 +62,7 @@ def get_image(case_id: str, tp_id: str, store: CaseStore = Depends(get_store),
     """Image voxels as int16 with geometry headers (see onconova.api.binary)."""
     vol = store.image(case_id, tp_id)
     case = store.get_case(case_id)
-    return volume_response(vol, vol.array, kind="image", label=case.get("label"))
+    return volume_response(vol, vol.array, kind="image", frame=f"{case_id}/{tp_id}", label=case.get("label"))
 
 
 MapKind = Literal["reference", "structures", "annotation", "prediction", "uncertainty", "saliency", "dose"]
@@ -76,32 +76,32 @@ def get_map(case_id: str, tp_id: str, kind: MapKind, model_id: str | None = Quer
 
     ``prediction``/``uncertainty``/``saliency`` need ``model_id``; ``dose`` needs ``key`` (from a dose result).
     """
-    vol = store.image(case_id, tp_id)
+    frame = f"{case_id}/{tp_id}"
     names = {"reference": "reference_lesions", "structures": "structures", "annotation": "annotation"}
     if kind in names:
-        arr = store.label(case_id, tp_id, names[kind])
-        if arr is None:
+        ov = store.overlay(case_id, tp_id, names[kind], is_label=True)
+        if ov is None:
             raise NotFoundError("map_not_found", f"No {kind} map for this timepoint.")
-        return volume_response(vol, arr, kind="label")
+        return volume_response(ov, ov.array, kind="label", frame=frame)
     if kind == "dose":
         if not key:
             raise OncoNovaError("key_required", "Pass key=<dose_map> from a dose result.", status_code=400)
-        arr = store.float_map(case_id, tp_id, key)
-        if arr is None:
+        ov = store.overlay(case_id, tp_id, key, is_label=False)
+        if ov is None:
             raise NotFoundError("map_not_found", "No such dose map; run the simulation first.")
-        return volume_response(vol, arr, kind="map", vmax=1.25, label="SIMULATED - NON-CLINICAL")
+        return volume_response(ov, ov.array, kind="map", frame=frame, vmax=1.25, label="SIMULATED - NON-CLINICAL")
     if not model_id:
         raise OncoNovaError("model_required", "Pass model_id for model outputs.", status_code=400)
     if kind == "prediction":
-        arr = store.label(case_id, tp_id, f"pred_{model_id}")
-        if arr is None:
+        ov = store.overlay(case_id, tp_id, f"pred_{model_id}", is_label=True)
+        if ov is None:
             raise NotFoundError("map_not_found", "No prediction yet; run segmentation first.")
-        return volume_response(vol, arr, kind="label", label="MODEL OUTPUT")
+        return volume_response(ov, ov.array, kind="label", frame=frame, label="MODEL OUTPUT")
     prefix = "unc" if kind == "uncertainty" else "sal"
-    arr = store.float_map(case_id, tp_id, f"{prefix}_{model_id}")
-    if arr is None:
+    ov = store.overlay(case_id, tp_id, f"{prefix}_{model_id}", is_label=False)
+    if ov is None:
         raise NotFoundError("map_not_found", f"No {kind} map for {model_id} at this timepoint.")
-    return volume_response(vol, arr, kind="map", vmax=1.0, label="MODEL OUTPUT")
+    return volume_response(ov, ov.array, kind="map", frame=frame, vmax=1.0, label="MODEL OUTPUT")
 
 
 @router.get("/cases/{case_id}/timepoints/{tp_id}/metadata")
@@ -186,12 +186,12 @@ def get_registered(case_id: str, tp_id: str, kind: Literal["image", "lesions"] =
     transform = reg.transform if reg else None
     if kind == "image":
         arr = resample_to(base, moving, transform)
-        return volume_response(base, arr, kind="image")
+        return volume_response(base, arr, kind="image", frame=f"{case_id}/{base_id}")
     lesions = lesion_map(store, case_id, tp_id, source)
     if lesions is None:
         raise NotFoundError("map_not_found", f"No {source} lesions for this timepoint.")
     arr = resample_to(base, moving.with_array(lesions.astype(np.uint8)), transform, is_label=True)
-    return volume_response(base, arr, kind="label")
+    return volume_response(base, arr, kind="label", frame=f"{case_id}/{base_id}")
 
 
 @router.post("/uploads")
