@@ -28,15 +28,26 @@
 | `imaging.registration` | Rigid Euler-3-D registration (Mattes MI, 3-level pyramid) and resampling (nearest for labels) |
 | `imaging.deid` | Profile-driven DICOM de-identification (remove, blank, HMAC pseudonyms, UID remap, private tags) |
 | `segmentation.classical` | Lung-envelope + density + shape heuristic; heuristic entropy uncertainty inside the envelope |
-| `segmentation.unet` | MONAI 3-D U-Net, MC-dropout entropy, input-gradient saliency, small-component post-processing, checkpoint hash check |
+| `segmentation.unet` | MONAI 3-D U-Net (single checkpoint or an ensemble listed in its card), resampled to its training spacing and run in overlapping tiles of its training patch (Gaussian blending), probabilities resampled back to the scan grid before the argmax; optional 8-mirror TTA; MC-dropout entropy, input-gradient saliency, small-component post-processing, checkpoint hash check |
+| `segmentation.grid` | The model working grid: same patient region as the scan at the model's spacing; resampling there and back (class probabilities channel by channel) |
+| `segmentation.medsam` | MedSAM (ViT-B) refining another model's detections slice by slice; boxes come only from that model, never from reference masks; loads local weights only, with the Hugging Face hub forced offline |
 | `segmentation.metrics` / `measure` | Dice, IoU, Hausdorff, HD95, MSD, sensitivity, specificity (with ROI); cc volumes, max axial diameter, sphericity, marching-cubes meshes |
 | `longitudinal.compare` | Registers follow-ups to baseline, tracks lesions across time, reports persisting / new / not-segmented regions, change and centroid shift |
 | `progression` | Feature extraction from longitudinal output, simulated cohort, logistic + bootstrap ensemble, AUROC / AUPRC / Brier / C-index / calibration with bootstrap CIs |
 | `dose` | Geometric illustration (relative units), DVH maths and indices, RTDOSE/NIfTI import resampled to the image grid |
-| `data` | Patient-level and temporal splits, leakage checks, synthetic and MSD manifests |
+| `data` | Patient-level and temporal splits, leakage checks, synthetic and MSD manifests (`scripts/import_msd.py` validates every scan and mask) |
 | `store` | Filesystem case store with ID validation (no path traversal) and an LRU volume cache |
 | `uploads` | Streaming size limit, extension allow-list, magic bytes, ZIP member/size/ratio limits, zip-slip and symlink rejection, de-identification before parsing, private temp dirs |
 | `security` / `audit` | Hashed API keys with roles (viewer < researcher < admin), localhost-only dev mode, JSONL audit log |
+
+## Real-CT evaluation (Stage 3)
+
+- `scripts/evaluate_segmentation.py --dataset msd-task06-lung --split val` evaluates on any manifest, one model per process, recording per-scan inference time and the process's peak memory. An external dataset's `test` split is refused without `--unlock-test`, so models are chosen on `val`.
+- `scripts/train_segmentation_msd.py` trains the same U-Net architecture on the MSD training patients. Scans are resampled to its grid and cached as memory-mapped arrays. Checkpoints are chosen on an inner split of the training patients, so the `val` patients stay unseen by both training and selection. It trains one model per seed and writes an ensemble card.
+- `scripts/calibrate_segmentation.py` measures whether TTA or MC dropout improves voxel calibration (ECE and Brier, near the tumour and over the body) before any confidence overlay is shown.
+- `scripts/build_segmentation_comparison.py` writes `docs/SEGMENTATION_COMPARISON.md` from the stored reports only, with paired per-patient differences against the best baseline.
+- `notebooks/nnunet_msd_task06_colab.ipynb` trains nnU-Net v2 on exactly the same fit and inner-validation patients on a Colab GPU. The `val` and `test` patients are never copied into its dataset.
+- New models appear in the app only when their card records `"adopted": true`, a decision taken from the comparison.
 
 ## Data flow for one case
 

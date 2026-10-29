@@ -1,0 +1,417 @@
+{
+  "report_id": "segmentation-demo-unet-msd-task06-lung-val-20261029T062135Z",
+  "task": "segmentation",
+  "model": {
+    "id": "demo-unet",
+    "version": "0.1.0",
+    "kind": "deep-learning",
+    "checkpoint_sha256": "b964d38dd42c8b7f90a9e1a128e3430f3bc406c609ee1c51d11701263563130d",
+    "label": "DEMO MODEL - trained or tuned on synthetic phantoms only; not validated on patients."
+  },
+  "dataset": {
+    "id": "msd-task06-lung",
+    "label": "PUBLIC RESEARCH DATA",
+    "generator": null,
+    "source": {
+      "dataset": "Lung",
+      "licence": "CC-BY-SA 4.0",
+      "reference": "The Cancer Imaging Archive",
+      "release": null
+    },
+    "split": "val",
+    "n_patients": 9,
+    "n_scans": 9,
+    "patient_counts_by_split": {
+      "val": 9,
+      "train": 44,
+      "test": 10
+    }
+  },
+  "protocol": "Patient-separated val split from the manifest. Per-scan metrics against the released manual masks, averaged per patient; mean, median and 2000-sample patient bootstrap 95% CI across patients. Specificity is computed inside the body mask (largest region above -500 HU, holes filled). Any-lesion only: the masks have one tumour label. One deterministic pass (no MC dropout).",
+  "results": {
+    "any_lesion": {
+      "dice": {
+        "n_patients": 9,
+        "mean": 0.0293,
+        "median": 0.0,
+        "std": 0.0689,
+        "ci95": [
+          0.0,
+          0.0783
+        ]
+      },
+      "iou": {
+        "n_patients": 9,
+        "mean": 0.0162,
+        "median": 0.0,
+        "std": 0.0387,
+        "ci95": [
+          0.0,
+          0.0437
+        ]
+      },
+      "hausdorff_mm": {
+        "n_patients": 9,
+        "mean": 233.6694,
+        "median": 252.7821,
+        "std": 65.33,
+        "ci95": [
+          192.1811,
+          274.7084
+        ]
+      },
+      "hd95_mm": {
+        "n_patients": 9,
+        "mean": 196.068,
+        "median": 199.7767,
+        "std": 43.1616,
+        "ci95": [
+          168.4911,
+          223.5076
+        ]
+      },
+      "mean_surface_distance_mm": {
+        "n_patients": 9,
+        "mean": 119.5669,
+        "median": 128.8197,
+        "std": 40.0589,
+        "ci95": [
+          92.0971,
+          144.5469
+        ]
+      },
+      "sensitivity": {
+        "n_patients": 9,
+        "mean": 0.05,
+        "median": 0.0,
+        "std": 0.1233,
+        "ci95": [
+          0.0,
+          0.1379
+        ]
+      },
+      "specificity": {
+        "n_patients": 9,
+        "mean": 0.9985,
+        "median": 0.9987,
+        "std": 0.0006,
+        "ci95": [
+          0.9981,
+          0.9989
+        ]
+      },
+      "n_scans": 9
+    },
+    "lesion_detection": {
+      "reference_lesions": 28,
+      "detected": 2,
+      "lesion_sensitivity": 0.0714,
+      "false_positive_components_per_scan": 13.5556
+    },
+    "resources": {
+      "inference_s_per_scan": {
+        "mean": 23.28,
+        "median": 22.13,
+        "max": 36.89
+      },
+      "peak_process_rss_mb": 7671.6,
+      "accelerator_mb": 1091.4,
+      "device": "mps",
+      "note": "Inference only (loading and metrics excluded). Peak RSS covers the whole evaluation process."
+    }
+  },
+  "per_scan": [
+    {
+      "patient_id": "lung_053",
+      "scan_id": "lung_053",
+      "runtime_s": 28.08,
+      "shape_zyx": [
+        252,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.938,
+        0.938,
+        1.245
+      ],
+      "any_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": 261.7680216436301,
+        "hd95_mm": 228.93349330741447,
+        "mean_surface_distance_mm": 103.3181706549619,
+        "sensitivity": 0.0,
+        "specificity": 0.9978208983909257,
+        "specificity_roi": "body",
+        "pred_volume_cc": 67.91059324750677,
+        "ref_volume_cc": 370.3841129463399
+      },
+      "detection": {
+        "reference_lesions": 3,
+        "detected": 0,
+        "false_positive_components": 26
+      }
+    },
+    {
+      "patient_id": "lung_022",
+      "scan_id": "lung_022",
+      "runtime_s": 36.89,
+      "shape_zyx": [
+        483,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.842,
+        0.842,
+        0.625
+      ],
+      "any_lesion": {
+        "dice": 0.042810476579361836,
+        "iou": 0.021873444583200456,
+        "hausdorff_mm": 277.9740811467009,
+        "hd95_mm": 157.61174330696346,
+        "mean_surface_distance_mm": 79.6271320385174,
+        "sensitivity": 0.05499231950844854,
+        "specificity": 0.9973172142788855,
+        "specificity_roi": "body",
+        "pred_volume_cc": 92.74314218111144,
+        "ref_volume_cc": 59.10573309987931
+      },
+      "detection": {
+        "reference_lesions": 8,
+        "detected": 1,
+        "false_positive_components": 16
+      }
+    },
+    {
+      "patient_id": "lung_036",
+      "scan_id": "lung_036",
+      "runtime_s": 20.04,
+      "shape_zyx": [
+        271,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.781,
+        0.781,
+        1.245
+      ],
+      "any_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": 265.3244516542459,
+        "hd95_mm": 242.81113805944696,
+        "mean_surface_distance_mm": 166.62033827276485,
+        "sensitivity": 0.0,
+        "specificity": 0.9981612442354024,
+        "specificity_roi": "body",
+        "pred_volume_cc": 97.26244789286284,
+        "ref_volume_cc": 8.127247591910418
+      },
+      "detection": {
+        "reference_lesions": 4,
+        "detected": 0,
+        "false_positive_components": 11
+      }
+    },
+    {
+      "patient_id": "lung_061",
+      "scan_id": "lung_061",
+      "runtime_s": 17.86,
+      "shape_zyx": [
+        211,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.859,
+        0.859,
+        1.244
+      ],
+      "any_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": 182.23403285653302,
+        "hd95_mm": 176.0572516128051,
+        "mean_surface_distance_mm": 143.91607977118272,
+        "sensitivity": 0.0,
+        "specificity": 0.999707672176216,
+        "specificity_roi": "body",
+        "pred_volume_cc": 5.055136076034978,
+        "ref_volume_cc": 1.5279337140033022
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 0,
+        "false_positive_components": 9
+      }
+    },
+    {
+      "patient_id": "lung_073",
+      "scan_id": "lung_073",
+      "runtime_s": 36.12,
+      "shape_zyx": [
+        493,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.789,
+        0.789,
+        0.625
+      ],
+      "any_lesion": {
+        "dice": 0.2204923013425358,
+        "iou": 0.12390634865411625,
+        "hausdorff_mm": 159.9114038058133,
+        "hd95_mm": 156.29908437419795,
+        "mean_surface_distance_mm": 73.03048500183353,
+        "sensitivity": 0.3953134635149024,
+        "specificity": 0.9987320384177136,
+        "specificity_roi": "body",
+        "pred_volume_cc": 24.475926304794474,
+        "ref_volume_cc": 9.465752605235867
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 1,
+        "false_positive_components": 10
+      }
+    },
+    {
+      "patient_id": "lung_031",
+      "scan_id": "lung_031",
+      "runtime_s": 23.27,
+      "shape_zyx": [
+        304,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.703,
+        0.703,
+        1.246
+      ],
+      "any_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": 137.60242611093966,
+        "hd95_mm": 125.33970494514918,
+        "mean_surface_distance_mm": 57.067953527525034,
+        "sensitivity": 0.0,
+        "specificity": 0.998771632183544,
+        "specificity_roi": "body",
+        "pred_volume_cc": 20.328135250660853,
+        "ref_volume_cc": 70.77674869701805
+      },
+      "detection": {
+        "reference_lesions": 3,
+        "detected": 0,
+        "false_positive_components": 12
+      }
+    },
+    {
+      "patient_id": "lung_066",
+      "scan_id": "lung_066",
+      "runtime_s": 22.13,
+      "shape_zyx": [
+        241,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.887,
+        0.887,
+        1.245
+      ],
+      "any_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": 204.71751831253766,
+        "hd95_mm": 199.7767474799041,
+        "mean_surface_distance_mm": 128.81968823595562,
+        "sensitivity": 0.0,
+        "specificity": 0.9983441089148635,
+        "specificity_roi": "body",
+        "pred_volume_cc": 37.921080310611956,
+        "ref_volume_cc": 7.874124796068377
+      },
+      "detection": {
+        "reference_lesions": 2,
+        "detected": 0,
+        "false_positive_components": 14
+      }
+    },
+    {
+      "patient_id": "lung_070",
+      "scan_id": "lung_070",
+      "runtime_s": 10.86,
+      "shape_zyx": [
+        266,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.762,
+        0.762,
+        1.245
+      ],
+      "any_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": 252.78207864668255,
+        "hd95_mm": 212.84930314795614,
+        "mean_surface_distance_mm": 157.21462532918744,
+        "sensitivity": 0.0,
+        "specificity": 0.9987001088538474,
+        "specificity_roi": "body",
+        "pred_volume_cc": 29.677017016206023,
+        "ref_volume_cc": 2.225433068193571
+      },
+      "detection": {
+        "reference_lesions": 1,
+        "detected": 0,
+        "false_positive_components": 11
+      }
+    },
+    {
+      "patient_id": "lung_001",
+      "scan_id": "lung_001",
+      "runtime_s": 14.25,
+      "shape_zyx": [
+        304,
+        512,
+        512
+      ],
+      "spacing_xyz_mm": [
+        0.693,
+        0.693,
+        1.0
+      ],
+      "any_lesion": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "hausdorff_mm": 360.7101785434058,
+        "hd95_mm": 264.9338001170448,
+        "mean_surface_distance_mm": 166.48793301931536,
+        "sensitivity": 0.0,
+        "specificity": 0.9987613521171769,
+        "specificity_roi": "body",
+        "pred_volume_cc": 22.13985185623169,
+        "ref_volume_cc": 1.3071516990661622
+      },
+      "detection": {
+        "reference_lesions": 5,
+        "detected": 0,
+        "false_positive_components": 13
+      }
+    }
+  ],
+  "runtime_s": 443.0,
+  "onconova_version": "0.1.0",
+  "caveat": "Real CT, PUBLIC RESEARCH DATA, against single-rater manual masks (Manual tumour segmentation from the MSD release (single rater); not pathology-confirmed.). 9 patients: confidence intervals are wide.",
+  "created_utc": "2026-10-29T06:21:35+00:00"
+}

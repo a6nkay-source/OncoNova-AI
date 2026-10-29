@@ -1,0 +1,29 @@
+# 3-D U-Net trained on real CT: MSD Task06 Lung training patients (PUBLIC RESEARCH DATA, CC BY-SA 4.0).
+# Same architecture as the demo model, two output classes (background, tumour).
+experiment: seg-unet-msd
+dataset:
+  manifest_id: msd-task06-lung    # data/external/msd-task06-lung/manifest.json (scripts/import_msd.py)
+  # Checkpoint selection uses an inner split of the manifest's train patients, so the manifest's
+  # val patients stay unseen by training and selection, and its test patients are never loaded.
+  inner_val_fraction: 0.15
+  inner_split_seed: 7
+model:
+  model_id: msd-unet
+  network:
+    out_channels: 2
+    channels: [16, 32, 64, 128]
+    strides: [2, 2, 2]
+    num_res_units: 1
+    dropout: 0.15
+training:
+  seeds: [1, 2, 3]                # one model per seed; the ensemble averages them
+  spacing_xyz: [1.0, 1.0, 1.5]    # model grid in mm; scans are resampled to it (and predictions back)
+  patch_zyx: [48, 112, 112]       # 72 x 112 x 112 mm; 1.2 s per step of 2 on an M2 (64x128x128: 2.05 s)
+  batch_size: 2
+  epochs: 30
+  iterations_per_epoch: 150
+  foreground_crop_probability: 0.67
+  learning_rate: 0.002
+  weight_decay: 0.00001
+  validate_every: 10
+  device: auto                    # auto | cpu | mps | cuda

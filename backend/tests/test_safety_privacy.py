@@ -37,6 +37,10 @@ def test_no_device_or_network_client_imports(path):
         assert root not in FORBIDDEN_MODULES, f"{path.name} imports device module {name}"
         assert name not in NETWORK_CLIENTS and root not in {"requests", "httpx", "aiohttp", "paramiko"}, (
             f"{path.name} imports network client {name}; medical data must not leave the server")
+        if root in {"transformers", "huggingface_hub"}:  # can download from the hub unless forced offline
+            src = path.read_text()
+            assert 'os.environ["HF_HUB_OFFLINE"] = "1"' in src and "local_files_only=True" in src, (
+                f"{path.name} uses {root} without forcing offline, local-only loading")
 
 
 def test_runtime_guard_refuses_device_modules(monkeypatch):

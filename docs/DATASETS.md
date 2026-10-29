@@ -19,7 +19,7 @@ Most public "tumour labels" are expert opinions (contours or ratings), not patho
 
 | Dataset | Cancer / region | Modality, format | Patients · images | Annotations | Ground truth | Licence · access | Size | Paper |
 |---|---|---|---|---|---|---|---|---|
-| **MSD Task06 Lung** ⭐ | NSCLC, thorax | CT · NIfTI | 96 (64 train labelled / 32 test unlabelled) | Tumour masks (train) | Single human rater, **not pathology-confirmed** | CC BY-SA 4.0 · open, no registration | 9.16 GB tar | [PMID 35840566](https://doi.org/10.1038/s41467-022-30695-9) |
+| **MSD Task06 Lung** ⭐ | NSCLC, thorax | CT · NIfTI | 95 (63 train labelled / 32 test unlabelled) | Tumour masks (train) | Single human rater, **not pathology-confirmed** | CC BY-SA 4.0 · open, no registration | 9.16 GB tar | [PMID 35840566](https://doi.org/10.1038/s41467-022-30695-9) |
 | NSCLC-Radiomics (Lung1) | NSCLC, thorax | CT, RTSTRUCT, SEG · DICOM; clinical CSV | 422 · 1,265 series / 52,073 images | GTV-1 by a radiation oncologist + lung, heart, oesophagus | Expert contour, **not pathology-confirmed**; survival outcomes | **CC BY-NC 3.0** (non-commercial) · open | 35.78 GB | [PMID 24892406](https://doi.org/10.1038/ncomms5006) |
 | LIDC-IDRI | Lung nodules, thorax | CT (also DX, CR) · DICOM + XML | 1,010 (table; description says 1,018 cases) · 1,308 series / 244,527 images | Outlines and ratings from 4 radiologists, two-phase read | **Radiologist opinion**; limited diagnosis subset (biopsy, resection, 2-year stability or unknown), pathology-confirmed share not stated | CC BY 3.0 · open | 133.16 GB | [PMID 21452728](https://doi.org/10.1118/1.3528204) |
 | LCTSC | Thoracic cancer patients (OARs only) | CT, RTSTRUCT · DICOM | 60 · 120 series / 9,593 images | Lungs, heart, oesophagus, spinal cord | Clinical contours edited to RTOG 1106 | CC BY 3.0 · open | 5.15 GB | [PMID 30144101](https://doi.org/10.1002/mp.13141) |
@@ -38,11 +38,11 @@ Mapping to modules: segmentation (B) → MSD Task06, NSCLC-Radiomics, LCTSC (org
 
 Why this one:
 
-1. **Laptop-sized:** one 9.16 GB tarball, about 96 volumes, versus 35-133 GB for the TCIA collections.
+1. **Laptop-sized:** one 9.16 GB tarball, 95 volumes, versus 35-133 GB for the TCIA collections.
 2. **Ready-made masks in NIfTI:** loads straight into OncoNova (`load_nifti`) with no RTSTRUCT/SEG conversion, matching the thoracic-CT domain of the demo models.
 3. **Fully open:** no registration, CC BY-SA 4.0 (share-alike obligations apply to redistributed derivatives).
 
-Caveats: labels come from a single rater and are not pathology-confirmed. The 32 test cases have no released labels, so all evaluation uses a patient-level split of the 64 labelled cases. MSD lung data came from TCIA, so do not combine it with other TCIA lung collections without checking for shared patients, or the same patient could leak between training and test.
+Caveats: labels come from a single rater and are not pathology-confirmed. The 32 test cases have no released labels, so all evaluation uses a patient-level split of the 63 labelled cases (the release's `dataset.json` says 63; an earlier version of this guide said 64). MSD lung data came from TCIA, so do not combine it with other TCIA lung collections without checking for shared patients, or the same patient could leak between training and test.
 
 ### Download and import
 
@@ -54,15 +54,41 @@ mkdir -p data/external/msd
 curl -L -o data/external/msd/Task06_Lung.tar https://msd-for-monai.s3-us-west-2.amazonaws.com/Task06_Lung.tar
 ```
 
+Check it before extracting: 9,163,696,640 bytes, MD5 `8afd997733c7fc0432f71255ba4e52dc` (the value MONAI's `DecathlonDataset` checks).
+
 ```bash
-tar -xf data/external/msd/Task06_Lung.tar -C data/external/msd
+md5 -q data/external/msd/Task06_Lung.tar
+```
+
+Extract with Python's path-checking `data` filter, which refuses absolute paths, `..` and links:
+
+```bash
+.venv/bin/python -I -c "import tarfile; tarfile.open('data/external/msd/Task06_Lung.tar').extractall('data/external/msd', filter='data')"
 ```
 
 ```bash
 cd backend && ../.venv/bin/python scripts/import_msd.py ../data/external/msd/Task06_Lung --manifest-id msd-task06-lung
 ```
 
-The importer reads `dataset.json` and validates every training pair: readable NIfTI, image/label geometry, allowed label values. It records spacing and lesion voxel counts, excludes failures with a reason, assigns a seeded patient-level split, and writes `data/external/msd-task06-lung/manifest.json`. Real CT volumes are about 512×512×(100-600) voxels. Before training the U-Net on them, add resampling to a common spacing and patch-based sampling (see [ROADMAP.md](ROADMAP.md)).
+The importer reads `dataset.json` and validates every training pair: readable NIfTI, image/label geometry, allowed label values. It records spacing and lesion voxel counts, excludes failures with a reason, assigns a seeded patient-level split, and writes `data/external/msd-task06-lung/manifest.json`. With seed 42 the split is 44 train, 9 val and 10 test patients, and none were excluded. The volumes are 512×512×(112-636) voxels at 0.60-0.98 mm in-plane and 0.62-2.5 mm between slices; median tumour volume is 5.8 cc in the train split (smallest 0.74 cc).
+
+### Train and compare (Stage 3)
+
+```bash
+cd backend && ../.venv/bin/python scripts/train_segmentation_msd.py
+```
+
+This trains three seeds of the U-Net on 37 train patients, chooses each checkpoint on 7 more, and writes an ensemble card. On an M2 it takes about 2 hours per seed while the Mac is awake. It caches the resampled scans in `data/external/msd-task06-lung/cache-*`, about 2 GB.
+
+```bash
+cd backend && ../.venv/bin/python scripts/evaluate_segmentation.py --dataset msd-task06-lung --split val --checkpoint-dir ../artifacts/models/seg-unet-msd-ens
+```
+
+```bash
+cd backend && ../.venv/bin/python scripts/build_segmentation_comparison.py
+```
+
+The `test` split is locked: the evaluation script refuses it without `--unlock-test`. nnU-Net is trained separately in Colab (`notebooks/nnunet_msd_task06_colab.ipynb`) on the same patients. Results are in [SEGMENTATION_COMPARISON.md](SEGMENTATION_COMPARISON.md).
 
 ### Next: NSCLC-Radiomics subsets via IDC
 

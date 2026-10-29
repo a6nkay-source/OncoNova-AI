@@ -4,6 +4,28 @@ Each entry says what changed and how it was checked. "Measured" means a test or 
 
 ## Unreleased
 
+### Stage 3: segmentation on real CT (in progress)
+
+Not finished: the candidate models are still training, so no candidate result exists yet and none is claimed here.
+
+- **Real data.** MSD Task06 Lung was downloaded from the MONAI mirror and checked: 9,163,696,640 bytes, MD5 equal to MONAI's published value. It was extracted with a path-checking filter. The release has 63 labelled and 32 unlabelled CTs (the dataset catalogue said 64 labelled; corrected).
+  - The patient-level manifest has 44 train, 9 val and 10 test patients, with none excluded.
+  - Candidates are compared on val only. The test split is locked: the evaluation script refuses it without `--unlock-test`.
+- **The U-Net now runs where it was trained.** Scans are resampled to the training spacing and segmented in overlapping tiles of the training patch, with Gaussian blending. Class probabilities are resampled back to the scan grid before the argmax.
+  - On the 18 synthetic test scans: any-lesion Dice 0.920 → 0.933, primary-lesion Dice 0.940 → 0.954, 1.2 → 1.7 s per scan.
+  - On the same scans resampled to 0.7 × 0.7 × 1.25 mm, as real CT is: 0.249 without resampling, 0.911 with it.
+  - *Tests:* a lesion keeps its centre to within a quarter voxel through the model grid and back, including for a rotated scan; class probabilities still sum to 1; any scan spacing gives output on the scan's own grid.
+- **Baselines on real CT (9 val patients).** These are the two models OncoNova had before this stage. Both are near zero, as expected for models built on synthetic phantoms.
+  - Classical heuristic: Dice 0.024 (95% CI 0.010–0.042), 40 s per scan.
+  - Synthetic-trained U-Net: Dice 0.029 (0.000–0.078), 23 s per scan.
+- **Candidates set up.** None evaluated yet.
+  - The same U-Net architecture trained on 37 MSD train patients, 3 seeds plus their ensemble. Checkpoints are chosen on 7 other train patients, so the val patients stay unseen.
+  - MedSAM refining the ensemble's detections. Its weights were checked against the published SHA-256. It is prompted only by the detector, never by reference boxes, and loads offline from local files.
+  - nnU-Net v2 via a Colab notebook on exactly the same patients.
+  - A calibration check that decides whether mirror test-time augmentation or MC dropout may drive a confidence overlay.
+- **Labels.** Segmentation results now carry the model's own label, so a real-CT model is not described as "trained on synthetic phantoms".
+- **Safety.** The static check now also requires any module using `transformers` or `huggingface_hub` to force offline, local-only loading.
+
 ### Stage 2: coordinate correctness
 
 The loaders were already correct. What was missing was proof, plus three ways an overlay could reach the screen in the wrong place.

@@ -109,7 +109,7 @@ docs/             architecture, API, datasets, deployment, safety, evaluation re
 |---|---|---|
 | 1. Architecture and UI | Done | - |
 | 2. Ingestion and visualisation | Done | DICOM SEG/RTSTRUCT import, series picker UI, PET SUV conversion |
-| 3. Segmentation | Done on synthetic data | Training on real data (MSD importer is ready), nnU-Net baseline |
+| 3. Segmentation | **In progress** on real CT (MSD Task06): baselines measured, candidates training | Candidate results and adoption decision, nnU-Net (Colab notebook ready), see [SEGMENTATION_COMPARISON.md](docs/SEGMENTATION_COMPARISON.md) |
 | 4. Longitudinal comparison | Done (rigid) | Deformable registration, image-based registration QC |
 | 5. Progression pipeline | Framework done on a simulated cohort | Real longitudinal labels (e.g. LUMIERE), survival models |
 | 6. Dose visualisation | Done (illustration + import) | RTSTRUCT contours for imported plans, a validated external research dose engine |

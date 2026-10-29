@@ -20,7 +20,7 @@ from onconova.longitudinal.compare import TimepointInput, analyze
 from onconova.progression import features as prog_features
 from onconova.progression.model import MODEL_DIR_NAME, ProgressionModel
 from onconova.provenance import provenance
-from onconova.safety import (DEMO_MODEL_LABEL, SIMULATION_LABEL, EvidenceKind, finding, unavailable)
+from onconova.safety import (SIMULATION_LABEL, EvidenceKind, finding, unavailable)
 from onconova.segmentation import uncertainty as unc
 from onconova.segmentation.base import LESION_CLASS_NAMES
 from onconova.segmentation.measure import components, describe_component, volume_cc
@@ -92,7 +92,7 @@ def run_segmentation(settings: Settings, store: CaseStore, case_id: str, tp_id: 
 
     summary = {
         "case_id": case_id, "tp_id": tp_id, "model_id": model_id,
-        "kind": EvidenceKind.MODEL_OUTPUT.value, "label": DEMO_MODEL_LABEL,
+        "kind": EvidenceKind.MODEL_OUTPUT.value, "label": model.card.label,
         "model": model.card.to_dict(),
         "volumes_cc": {name: round(volume_cc(result.labels == k, volume.spacing), 4) for k, name in LESION_CLASS_NAMES.items()},
         "volume_kind": EvidenceKind.MEASURED_FROM_MODEL.value,

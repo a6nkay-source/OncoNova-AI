@@ -11,8 +11,8 @@ datasets:
     body_region: Thorax
     modality: CT
     format: NIfTI (reoriented to RAS, not resampled)
-    patients: "96 (64 training with labels, 32 test without released labels)"
-    images: "96 CT volumes"
+    patients: "95 (63 training with labels, 32 test without released labels), per the release's dataset.json"
+    images: "95 CT volumes"
     annotations: Tumour segmentation masks (training cases only)
     ground_truth: >-
       Manual segmentation by a human rater (the paper states labels came from a single rater in general).

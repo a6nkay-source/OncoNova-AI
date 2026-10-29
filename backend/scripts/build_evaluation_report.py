@@ -28,8 +28,9 @@ def ci(c, d=3):
     return "n/a" if not c or c[0] is None else f"{c[0]:.{d}f}-{c[1]:.{d}f}"
 
 
-def latest(reports, task, model_id=None):
-    cands = [r for r in reports if r["task"] == task and (model_id is None or r["model"]["id"] == model_id)]
+def latest(reports, task, model_id=None, dataset=None):
+    cands = [r for r in reports if r["task"] == task and (model_id is None or r["model"]["id"] == model_id)
+             and (dataset is None or r.get("dataset", {}).get("id") == dataset)]
     return max(cands, key=lambda r: r["created_utc"]) if cands else None
 
 
@@ -86,7 +87,7 @@ def prog_section(r) -> list[str]:
 def main() -> None:
     settings = get_settings()
     reports = [json.loads(p.read_text()) for p in settings.evaluations_dir.glob("*.json")]
-    seg = [latest(reports, "segmentation", m) for m in ("demo-classical", "demo-unet")]
+    seg = [latest(reports, "segmentation", m, "synthetic-seg-v1") for m in ("demo-classical", "demo-unet")]
     prog = latest(reports, "future_progression_risk")
     L = [
         "# OncoNova AI model evaluation report",
